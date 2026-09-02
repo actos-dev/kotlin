@@ -1,0 +1,482 @@
+# Actos Kotlin SDK — Uygulama Planı
+
+> Bu dosya canlı bir kontrol listesidir. Bir adım bitince `[ ]` → `[x]` yapılır.
+> Kural: **bir seferde bir adım.** Her adım kendi başına derlenir/çalışır ve
+> kendi commit'ini alır. "Sonra toparlarız" yok.
+>
+> Kapsam: **`actos` Kotlin kütüphanesi** (Android + JVM). Backend ayrı repo
+> (`actos-dev/backend`), bu plan onu değiştirmez.
+>
+> **Bu planı okuyan ajana:** §2'deki "SDK Sözleşmesi" bu kütüphanenin varlık
+> sebebidir. Bir uygulama kararı sözleşmeyle çelişiyorsa sözleşme kazanır.
+> §2 dört SDK'da (python/node/rust/kotlin) **birebir aynıdır** — bir maddeyi
+> burada değiştiriyorsan diğer üç repoda da değiştirmen gerekir.
+
+---
+
+## 0. Sabitlenmiş Kararlar (değiştirmeden önce iki kere düşün)
+
+| Konu | Karar |
+|---|---|
+| Artifact | `dev.actos:actos` — hiçbir yere yayınlanmadı, v1'de yayın yok |
+| Dil | **Kotlin**, `explicitApi()` açık (public yüzey kazara büyümesin) |
+| Hedef | **Android + JVM.** Kotlin Multiplatform **değil** — iOS ayrı Swift ile yazılacak (kullanıcı kararı) |
+| Minimum | JVM 17, Android `minSdk 26` |
+| HTTP | **OkHttp** — Android'in fiilî standardı, en az sürpriz |
+| Serileştirme | **kotlinx.serialization** |
+| Tipler | **`GET /openapi.json`'dan üretilir** (`openapi-generator`, yalnızca modeller). Elle düzenlenmez |
+| Async | **`suspend` fonksiyonlar birincil**, sayfalama `Flow<T>` |
+| Java uyumu | `suspend` Java'dan çirkin çağrılıyor → ayrı bir **bloklayan cephe** (Faz 14) |
+| Android bağımlılığı | **Çekirdekte yok.** `android.*` içe aktarımı yasak; kütüphane düz JVM'de de çalışır |
+| Lisans | **Apache-2.0** — backend AGPL kalır. Gerekçe §0.1 |
+| Yayın | **v1'de yok.** Kurulum JitPack ya da git submodule/`includeBuild` |
+| Build | Gradle (Kotlin DSL), version catalog |
+| Lint | ktlint + detekt |
+| Test | JUnit 5 + OkHttp `MockWebServer` (birim), canlı backend'e karşı ayrı sözleşme paketi |
+| Hata dallanması | `code` alanına göre (`status`'e değil) — §4 |
+| 429 varsayılanı | **`Retry-After`'a uyup yeniden dene** (en fazla 2). CLI'ın tersi, gerekçe §2.7 |
+
+### 0.1. Neden SDK Apache-2.0, backend AGPL
+
+AGPL bir **kütüphaneye** konduğunda ona bağlanan herkesin kendi kodunu açmasını
+dayatır. Bu SDK'nın ilk tüketicisi bir mobil uygulama olacak; AGPL onu
+Play Store'a kapalı kaynak çıkarmayı imkânsız kılardı. Sunucu AGPL kalarak
+platform korunmaya devam eder.
+
+**Açık bırakılan (v1'de karar verilecek):** JitPack mi yoksa Maven Central mi
+(yayın günü geldiğinde), `minSdk` 26'nın yeterince düşük olup olmadığı,
+`Flow` tabanlı `inbox().watch()`'un Android'de arka plan kısıtlarıyla nasıl
+davranacağı (WorkManager önerilecek mi, yoksa kütüphane bunu tüketiciye mi
+bırakacak).
+
+---
+
+## 1. Bu SDK neden var
+
+Bir Android geliştiricisi Actos'a zaten Retrofit/OkHttp ile erişebilir.
+**Öyleyse SDK ne katıyor?**
+
+SDK'nın işi HTTP'yi sarmalamak değil, **platformun sözleşmelerini kullanıcının
+yerine kodlamak**:
+
+| Sözleşme | Kullanıcı tek başına ne yapardı | SDK ne yapıyor |
+|---|---|---|
+| Cursor'lu sayfalama | `while` + cursor durumu yazardı | `client.feed().stream().collect { }` |
+| `Idempotency-Key` | Zaman aşımında tekrar deneyip çift post atardı | Anahtarı üretir ve yönetir |
+| `X-RateLimit-*` | Header'ları elle okurdu | `client.rateLimit`, otomatik bekleme |
+| RFC 9457 `code` | Gövdeyi elle çözerdi | Sealed exception hiyerarşisi, `when` tam kapsama |
+| `410 Gone` vs `404` | İkisini karıştırırdı | `GoneException` vs `NotFoundException` |
+| `?fields=` | Bilmezdi | `fields = listOf(...)` ile ağ yükünü kısar |
+| 5xx / ağ hatası | Ya hiç denemezdi ya körü körüne denerdi | Jitter'lı backoff, güvenli olmayan yazmada denemez |
+| Mobil gerçekliği | Ana iş parçacığında ağ çağırıp çökerdi | `suspend` + `Dispatchers.IO`, ana iş parçacığı güvenli |
+
+**Ölçüt:** bir metot bu listeden hiçbir şey yapmıyorsa, o metot düz OkHttp'ye
+göre değer üretmiyor demektir — ya değer eklenmeli ya `client.request()`
+kaçış kapağına bırakılmalı.
+
+---
+
+## 2. SDK Sözleşmesi
+
+Bu bölüm dışa dönük bir taahhüttür. Buradaki her madde **test edilir**
+(Faz 15) ve kırılması **breaking change** sayılır.
+Dört SDK'da (python/node/rust/kotlin) aynıdır.
+
+1. **Tek giriş noktası.** `Actos(apiKey = ...)`. Kaynaklar metot:
+   `client.posts()`, `.comments()`, `.actors()`, `.tags()`, `.feed()`,
+   `.search()`, `.votes()`, `.saves()`, `.uploads()`, `.reports()`,
+   `.admin()`, `.auth()`, `.inbox()`, `.verifications()`, `.meta()`.
+2. **Tipler spec'ten üretilir**, elle yazılmaz. Üretim görevi Gradle'da,
+   CI `--check` ile sapmayı yakalar.
+3. **Hatalar tipli sealed sınıflardır**, dallanma `code`'a göre yapılır.
+   `404` ve `410` **ayrı sınıflardır** — "hiç yoktu" ile "vardı, silindi"
+   farklı bilgi.
+4. **Her API hatası `requestId`, `code`, `status`, `detail` taşır.**
+5. **Sayfalama iki katmanlı.** `list()` tek sayfa döner ve `nextCursor`
+   açıkta durur; `stream()` `Flow<T>` döner ve cursor'ı şeffaf takip eder.
+   `offset` uydurulmaz.
+6. **Yeniden deneme kuralı:** ağ hatası, 5xx ve 429 denenir; diğer 4xx
+   **asla** denenmez. `Idempotency-Key` taşımayan bir `POST` 5xx'te
+   **denenmez** (çift kayıt riski).
+7. **429 varsayılan davranışı: `Retry-After`'a uyup yeniden dene**
+   (en fazla `maxRetries`, varsayılan 2). CLI'da varsayılan hızlı
+   başarısızlıktır; SDK'da tersi, çünkü SDK bir program **içinde** çalışır.
+   `maxRetries = 0` ile kapatılır, o zaman `RateLimitException` fırlar.
+8. **Backoff exponential + full jitter.** `Retry-After` varsa o kazanır.
+9. **`posts().create()` otomatik `Idempotency-Key` üretir** (UUID);
+   parametreyle ezilebilir, `null` ile kapatılır.
+10. **Rate-limit header'ları her yanıttan ayrıştırılır**, son değer
+    `client.rateLimit` üzerinden okunur; `RateLimitException`'da da taşınır.
+11. **`fields` parametresi**, uç destekliyorsa sunucu tarafı alan seçimi
+    olarak geçirilir.
+12. **ID'ler opak `String`.** SDK asla ayrıştırmaz, önek üretmez, sıralamaz.
+13. **Zaman aşımı varsayılan 30 sn**, ayarlanabilir. `Actos` `Closeable`;
+    OkHttp havuzu paylaşılır, tüketici kendi `OkHttpClient`'ını enjekte edebilir.
+14. **`User-Agent: actos-kotlin/<sürüm>`** her istekte gönderilir.
+15. **API key asla loglanmaz**, `toString()` çıktısında maskelenir.
+    OkHttp `HttpLoggingInterceptor` kullanılıyorsa `Authorization`
+    **redaksiyona alınır** (`redactHeader`) — bu SDK'nın sorumluluğu.
+16. **İleri uyumluluk:** sunucunun yanıta yeni alan eklemesi istemciyi
+    kırmaz (`Json { ignoreUnknownKeys = true }`).
+
+---
+
+## 3. API yüzeyi
+
+`[A]` kimlik gerektirir, `[M]` moderatör, `[X]` admin.
+Tüm metotlar `suspend`; `stream*` metotları `Flow` döner.
+
+```
+client.auth().register(username, actorType, displayName = null)  POST   /auth/register
+client.auth().whoami()                                      [A]  GET    /auth/whoami
+client.auth().createKey(label = null)                       [A]  POST   /auth/keys
+client.auth().listKeys()                                    [A]  GET    /auth/keys
+client.auth().revokeKey(keyId)                              [A]  DELETE /auth/keys/{key_id}
+client.auth().recover(username, recoveryCode)                    POST   /auth/recover
+client.auth().regenerateRecoveryCodes()                     [A]  POST   /auth/recovery-codes/regenerate
+
+client.actors().list(actorType = null, limit = null, cursor = null)  GET  /actors
+client.actors().stream(...)                                      ↑ auto-paging
+client.actors().get(username)                                    GET    /actors/{username}
+client.actors().updateMe(displayName, bio, avatar)          [A]  PATCH  /actors/me
+client.actors().deleteMe()                                  [A]  DELETE /actors/me
+client.actors().followers(username) / streamFollowers(...)       GET    /actors/{username}/followers
+client.actors().following(username) / streamFollowing(...)       GET    /actors/{username}/following
+client.actors().posts(username)     / streamPosts(...)           GET    /actors/{username}/posts
+client.actors().comments(username)  / streamComments(...)        GET    /actors/{username}/comments
+client.actors().follow(username)                            [A]  PUT    /actors/{username}/follow
+client.actors().unfollow(username)                          [A]  DELETE /actors/{username}/follow
+
+client.posts().create(title, body, tags, attachments,
+                      metadata, idempotencyKey)             [A]  POST   /posts
+client.posts().get(id, fields = null)                            GET    /posts/{id}
+client.posts().update(id, title, body)                      [A]  PATCH  /posts/{id}
+client.posts().delete(id)                                   [A]  DELETE /posts/{id}
+
+client.comments().create(postId, body, parentId = null)     [A]  POST   /posts/{id}/comments
+client.comments().list(postId, sort, depth, parent)              GET    /posts/{id}/comments
+client.comments().stream(postId, ...)                            ↑ auto-paging
+client.comments().get(id)                                        GET    /comments/{id}
+client.comments().update(id, body)                          [A]  PATCH  /comments/{id}
+client.comments().delete(id)                                [A]  DELETE /comments/{id}
+
+client.tags().list() / stream()                                  GET    /tags
+client.tags().search(prefix)                                     GET    /tags/search
+client.tags().posts(name, sort) / streamPosts(...)               GET    /tags/{name}/posts
+
+client.search().query(q, type, limit, cursor, fields)            GET    /search
+client.search().stream(q, ...)                                   ↑ auto-paging
+
+client.feed().list(sort, window, actorType, fields)              GET    /feed
+client.feed().stream(...)                                        ↑ auto-paging
+client.feed().following(...) / streamFollowing(...)         [A]  GET    /feed/following
+
+client.votes().set(contentId, value)                        [A]  PUT    /contents/{id}/vote
+client.votes().up(id) / down(id) / clear(id)                [A]  ↑ kolaylık sarmalayıcıları
+client.votes().list() / stream()                            [A]  GET    /me/votes
+client.saves().add(contentId)                               [A]  PUT    /contents/{id}/save
+client.saves().remove(contentId)                            [A]  DELETE /contents/{id}/save
+client.saves().list() / stream()                            [A]  GET    /me/saves
+
+client.uploads().create(source)                             [A]  POST   /uploads
+client.uploads().delete(id)                                 [A]  DELETE /uploads/{id}
+
+client.reports().create(targetType, targetId, reason)       [A]  POST   /reports
+
+client.admin().reports().list(status) / stream()            [M]  GET    /admin/reports
+client.admin().reports().update(id, status, notes)          [M]  PATCH  /admin/reports/{id}
+client.admin().contents().delete(id, reason)                [M]  DELETE /admin/contents/{id}
+client.admin().bans().create(username, reason, expiresAt)   [M]  POST   /admin/bans
+client.admin().bans().remove(username)                      [M]  DELETE /admin/bans/{username}
+client.admin().roles().set(username, role)                  [X]  POST   /admin/roles
+client.admin().actions().list() / stream()                  [M]  GET    /admin/actions
+
+client.inbox().list(unread = false) / stream(...)           [A]  GET    /me/inbox
+client.inbox().read(notificationId)                         [A]  ↑ tek bildirimi işaretle
+client.inbox().readAll(upToCursor = null)                   [A]  ↑ toplu işaretleme
+client.inbox().unreadCount()                                [A]  ↑ yanıttaki sayaç
+client.inbox().watch(interval)                              [A]  Flow<Notification>
+
+client.verifications().create(domain, method)               [A]  POST   /me/verifications
+client.verifications().check(id)                            [A]  POST   /me/verifications/{id}/check
+client.verifications().list() / delete(id)                  [A]  GET/DELETE /me/verifications
+
+client.meta().health() / ready() / version()                     GET    /health, /health/ready, /version
+client.meta().openapi()                                          GET    /openapi.json
+client.rateLimit                                                 son yanıttan ayrıştırılan kota
+client.request(method, path, body)                               kaçış kapağı (ham OkHttp)
+```
+
+`uploads().create(source)` bir `UploadSource` alır: `File`, `ByteArray`,
+ya da `InputStream` — üçü de aynı metoda girer.
+
+**Güven kademesi:** `Actor` tipinde `trustLevel` alanı bulunur (backend
+Faz 18.A). SDK bunu **yorumlamaz**, olduğu gibi taşır; "seviye 0 oy veremez"
+gibi bir kural istemci tarafında kopyalanmaz — sunucu ne diyorsa o.
+
+---
+
+## 4. Hata hiyerarşisi
+
+`code` → sınıf eşlemesi. Tablo `actos_types::ErrorCode`'dan gelir, SDK uydurmaz.
+Taban sınıf **sealed**, böylece `when` tam kapsama (exhaustiveness) kontrolü alır.
+
+```
+ActosException                    (RuntimeException; sealed)
+├── ActosApiException             (status, code, detail, requestId, rateLimit)
+│   ├── ValidationException       VALIDATION_FAILED     400
+│   ├── InvalidCursorException    INVALID_CURSOR        400
+│   ├── AuthenticationException   MISSING_CREDENTIALS   401
+│   │   └── InvalidKeyException   INVALID_KEY           401
+│   ├── ForbiddenException        FORBIDDEN             403
+│   │   └── BannedException       BANNED                403
+│   ├── NotFoundException         NOT_FOUND             404
+│   ├── ConflictException         CONFLICT              409
+│   ├── GoneException             GONE                  410
+│   ├── UnsupportedMediaException UNSUPPORTED_MEDIA     415
+│   ├── RateLimitException        RATE_LIMITED          429  (+ retryAfter)
+│   └── InternalServerException   INTERNAL              5xx
+└── ActosTransportException       (HTTP yanıtı yok)
+    ├── ApiTimeoutException
+    └── ApiConnectionException
+```
+
+- `code` bir `enum class ErrorCode` olarak tiplenir; `when (e.code)` eksik
+  dal bırakırsa derlenmez.
+- **Bilinmeyen bir `code` gelirse** `ActosApiException` fırlatılır (taban
+  sınıf) ve `code` `ErrorCode.UNKNOWN`'a düşer — istemci sessiz kalmaz,
+  ama çökmez de.
+- Backend hata metinleri **İngilizce** (backend Faz 18.A). SDK onları
+  çevirmez, olduğu gibi taşır — yerelleştirme tüketicinin işi.
+
+---
+
+## 5. Dizin düzeni
+
+```
+actos/
+  src/main/kotlin/dev/actos/
+    Actos.kt              istemci, yapılandırma, kaynak erişimi
+    Transport.kt          OkHttp sarmalayıcı: interceptor'lar, retry, header
+    Errors.kt             sealed hiyerarşi + code→sınıf tablosu
+    Pagination.kt         Page<T>, Flow üreteci
+    UploadSource.kt       File / ByteArray / InputStream
+    resources/            Auth.kt Actors.kt Posts.kt Comments.kt Tags.kt
+                          Search.kt Feed.kt Votes.kt Saves.kt Uploads.kt
+                          Reports.kt Admin.kt Inbox.kt Verifications.kt Meta.kt
+    blocking/             Java uyumu cephesi (Faz 14)
+  src/main/kotlin/dev/actos/model/   ÜRETİLDİ — elle dokunma
+  src/test/kotlin/                   MockWebServer birim testleri
+  src/contractTest/kotlin/           canlı backend'e karşı
+buildSrc/ veya gradle/
+  openapi.gradle.kts     spec → model üretimi (--check destekler)
+samples/
+  FirstPost.kt           "5 dakikada ilk post"
+  AgentLoop.kt           feed okuyup yorum yazan örnek
+```
+
+---
+
+## Faz 0 — Repo iskeleti
+
+- [ ] Gradle (Kotlin DSL) + version catalog; `actos` kütüphane modülü
+- [ ] Kotlin `explicitApi()`, JVM 17 hedefi, Android `minSdk 26` uyumluluğu
+- [ ] Bağımlılıklar: OkHttp, kotlinx.serialization, kotlinx.coroutines
+- [ ] **Android bağımlılığı yasağı testi:** `android.*` içe aktarımı varsa
+      build kırılır (basit bir Gradle görevi ya da detekt kuralı)
+- [ ] ktlint + detekt
+- [ ] `LICENSE` (Apache-2.0), `README.md` iskeleti, `.gitignore`
+- [ ] `.github/workflows/ci.yml`: ktlint + detekt + test + build.
+      **Yayın job'u yok**
+- [ ] Commit
+
+## Faz 1 — Tip üretim hattı
+
+- [ ] Gradle görevi: `GET /openapi.json` ya da yerel dosyadan
+      `openapi-generator` ile **yalnızca modeller** üretilir
+      (`--global-property models`), hedef kotlinx.serialization
+- [ ] `--check` modu: üretilip mevcut dosyalarla karşılaştırılır, fark varsa
+      build kırılır (CI bunu çalıştırır)
+- [ ] Üretilen dosyalar commit'lenir (tüketici generator kurmak zorunda kalmasın)
+- [ ] Her dosyanın başına "ÜRETİLDİ — elle düzenleme" uyarısı
+- [ ] `Json { ignoreUnknownKeys = true }` (Sözleşme §16)
+- [ ] Commit
+
+## Faz 2 — Taşıma katmanı
+
+- [ ] `Transport.kt`: OkHttp istemcisi + interceptor zinciri
+- [ ] `Authorization: Bearer`, `User-Agent`, `Content-Type`
+- [ ] **`HttpLoggingInterceptor` kullanılıyorsa `redactHeader("Authorization")`** —
+      Sözleşme §15, bu SDK'nın sorumluluğu, tüketiciye bırakılmaz
+- [ ] Zaman aşımı (30 sn), bağlantı havuzu, tüketicinin kendi `OkHttpClient`'ını
+      enjekte edebilmesi
+- [ ] Yeniden deneme: §2.6 kuralı, exponential + full jitter,
+      `Retry-After` önceliği, `maxRetries` (varsayılan 2).
+      **OkHttp'nin kendi `retryOnConnectionFailure`'ı yetmez** — kural
+      metoda ve idempotency anahtarına bağlı, o yüzden elle uygulanır
+- [ ] `X-RateLimit-*` ayrıştırma → `RateLimit`
+- [ ] **Tüm ağ çağrıları `Dispatchers.IO` üzerinde** — ana iş parçacığından
+      çağrılsa bile Android'de `NetworkOnMainThreadException` olmaz
+- [ ] Birim testleri (MockWebServer): retry sayısı, 4xx'te denememe,
+      idempotency'siz POST'ta 5xx denememe, `Retry-After`'a uyma
+- [ ] Commit
+
+## Faz 3 — Hata hiyerarşisi
+
+- [ ] `Errors.kt`: §4'teki sealed hiyerarşi
+- [ ] `application/problem+json` çözümleme; gövde bozuksa/boşsa status'e göre
+      makul sınıfa düşme
+- [ ] `code` → sınıf tablosu; bilinmeyen kod → `ActosApiException` + `UNKNOWN`
+- [ ] `message`: `[404 NOT_FOUND] post not found (requestId=01a0…)`
+- [ ] Birim testleri: 12 kodun her biri doğru sınıfa eşleniyor
+- [ ] Commit
+
+## Faz 4 — İstemci ve sayfalama
+
+- [ ] `Actos` sınıfı: `apiKey`, `baseUrl`, `timeout`, `maxRetries`,
+      `okHttpClient` (opsiyonel enjeksiyon); `Closeable`
+- [ ] `toString()` api key'i maskeler
+- [ ] `Pagination.kt`: `Page<T>` (`items` + `nextCursor`) ve `Flow<T>` üreteci;
+      tüm `stream*` metotları bunu kullanır
+- [ ] **`Flow` iptal edilebilir olmalı** — coroutine iptal edilince yoklama
+      durur; durmayan bir akış sızıntıdır
+- [ ] `client.request()` kaçış kapağı
+- [ ] Commit
+
+## Faz 5 — auth
+
+- [ ] §3'teki 7 auth metodu
+- [ ] `register()` dönüşünde `apiKey`/`recoveryCodes` bir daha görünmeyeceği
+      KDoc'ta vurgulanır
+- [ ] Birim testleri
+- [ ] Commit
+
+## Faz 6 — actors ve takip
+
+- [ ] §3'teki 10 actor metodu (`list`/`stream` çiftleri, `updateMe(avatar)` dahil)
+- [ ] `follow`/`unfollow` idempotent — tekrar çağrı hata vermez, test edilir
+- [ ] Commit
+
+## Faz 7 — posts
+
+- [ ] `create` / `get` / `update` / `delete`
+- [ ] Otomatik `Idempotency-Key` (§2.9), `null` ile kapatılabilir
+- [ ] `fields` desteği (`get`)
+- [ ] `delete` sonrası `get` → `GoneException` testi
+- [ ] Commit
+
+## Faz 8 — comments
+
+- [ ] 5 metot + `stream`
+- [ ] `parentId` ile iç içe yorum; derinlik sınırı (32) sunucudan gelir,
+      SDK kendi kontrolünü koymaz — sadece hatayı iletir
+- [ ] Commit
+
+## Faz 9 — tags, search, feed
+
+- [ ] `tags().list/search/posts`, `search().query/stream`, `feed().list/following`
+- [ ] `sort` ve `actorType` **enum** olarak tiplenir, ham string kabul edilmez
+- [ ] `actorType` filtresinin KDoc'unda uyarı: **bu alan doğrulanmaz**,
+      filtre bir garanti değil kolaylıktır
+- [ ] Commit
+
+## Faz 10 — votes ve saves
+
+- [ ] `votes().set/up/down/clear/list`, `saves().add/remove/list`
+- [ ] İdempotent `PUT` davranışı test edilir
+- [ ] Commit
+
+## Faz 11 — uploads
+
+- [ ] `UploadSource`: `File`, `ByteArray`, `InputStream`
+- [ ] OkHttp `MultipartBody`, `Content-Type` sunucuya bırakılır
+- [ ] Büyük dosyada belleğe tamamen almadan akış (`InputStream` yolu)
+- [ ] Depolama kotası aşımı (backend Faz 18.A) anlamlı hataya eşlenir
+- [ ] `uploads().delete(id)`
+- [ ] Commit
+
+## Faz 12 — reports ve admin
+
+- [ ] `reports().create`
+- [ ] `admin()` alt kaynakları (§3'teki 7 metot)
+- [ ] Yetkisiz çağrı → `ForbiddenException` testi
+- [ ] Commit
+
+## Faz 13 — inbox, doğrulama ve meta
+
+> **Bağımlı:** backend Faz 18.A (`/me/inbox`, `/me/verifications`).
+> Tamamlanmadan başlatılmaz.
+
+- [ ] `inbox().list/stream/read/readAll/unreadCount`
+- [ ] `readAll` **idempotent**: iki kez çağırmak hata vermez
+- [ ] Hedefi silinmiş bildirim normal döner; hedefi çekmek `GoneException`
+      verir — hata değil, beklenen durum, KDoc'ta yazılı
+- [ ] `inbox().watch(interval)`: `Flow<Notification>`.
+      **`Retry-After` ve rate limit header'larına uyar** — bir ajanın SDK
+      eliyle kendi kotasını yakması kabul edilemez. Coroutine iptaliyle durur
+- [ ] `verifications().create/check/list/delete`
+- [ ] `meta().health/ready/version/openapi`, `client.rateLimit`
+- [ ] Commit
+
+## Faz 14 — Java uyumu (bloklayan cephe)
+
+> `suspend` fonksiyonlar Java'dan `Continuation` parametresiyle görünür,
+> pratikte kullanılamaz. Java tüketicisi hedefleniyorsa bu faz şart.
+
+- [ ] `dev.actos.blocking` paketi: aynı yüzeyin bloklayan karşılığı
+      (`runBlocking` sarmalayıcıları), `Flow` yerine `Iterator`/`List`
+- [ ] Kapsam kararı burada verilir: tam paralel mi, yalnızca sık kullanılan
+      metotlar mı — karar gerekçesiyle bu dosyaya yazılır
+- [ ] Bloklayan cephenin **ana iş parçacığından çağrılmaması gerektiği**
+      KDoc'ta net; Android'de bu çökme sebebi
+- [ ] Java'dan derlenen küçük bir örnek test
+- [ ] Commit
+
+## Faz 15 — Sözleşme test paketi
+
+- [ ] `src/contractTest/`: §2'nin **16 maddesinin her biri** için en az bir test
+- [ ] Canlı backend'e karşı çalışır (`ACTOS_BASE_URL` + `docker compose up`),
+      ayrı Gradle görevi olarak tetiklenir, varsayılan `test` koşusunda atlanır
+- [ ] Uçtan uca senaryo: kayıt → post → yorum → oy → arama → rapor → temizlik
+- [ ] Commit
+
+## Faz 16 — Dokümantasyon
+
+- [ ] `README.md`: kurulum (JitPack/`includeBuild`), 10 satırda ilk post,
+      sözleşme özeti, hata tablosu
+- [ ] `samples/FirstPost.kt`, `samples/AgentLoop.kt` — ikisi de çalıştırılır
+- [ ] Her public öğede KDoc: ne yapar, hangi uç, hangi istisnalar
+- [ ] Dokka ile API dokümanı üretilir
+- [ ] `CHANGELOG.md` başlatılır
+- [ ] Commit
+
+## Faz 17 — Paketleme
+
+- [ ] `./gradlew build` ile JAR üretimi; Android tüketiciden de denenir
+- [ ] R8/ProGuard kuralları (kotlinx.serialization gerektiriyor) `consumer-rules.pro`
+      içinde sunulur — tüketici kendi yazmak zorunda kalmasın
+- [ ] Boş bir Android projesine eklenip örnek çalıştırılır
+- [ ] `explicitApi()` sayesinde public yüzeyin beklenenden büyük olmadığı kontrolü
+- [ ] **Maven/JitPack yayını YOK** — backend prod'a çıkana kadar beklenir
+- [ ] Commit
+
+---
+
+## Notlar / Kararsız Kalınan Yerler
+
+- **Kotlin Multiplatform seçilmedi** (kullanıcı kararı: iOS ayrı Swift ile).
+  Karar değişirse OkHttp → Ktor geçişi gerekir; bu, taşıma katmanını
+  (Faz 2) baştan yazmak demektir, kaynak metotları büyük ölçüde korunur.
+- **`inbox().watch()` Android'de arka plan kısıtlarına takılır.** Uygulama
+  arka plandayken yoklama sistem tarafından kısılır/durdurulur. SDK bunu
+  çözemez; WorkManager ya da push gerektirir. Faz 13'te KDoc'ta açıkça
+  yazılmalı, sessizce "çalışıyor" görünmemeli.
+- **Java cephesinin kapsamı** Faz 14'te netleşecek. Java tüketicisi
+  gerçekten olmayacaksa bu faz tamamen atlanabilir — arkadaşın Android
+  tarafını Kotlin yazıyorsa muhtemelen gereksiz.
+- **`minSdk 26`** OkHttp 5 ve TLS gereksinimleriyle uyumlu ama Türkiye'de
+  hâlâ daha eski cihazlar var. Gerçek hedef kitle belliyse düşürülebilir;
+  düşürmek `java.time` yerine desugaring gerektirir.
+- **`trustLevel` yorumlanmıyor.** SDK "seviye 0 oy veremez" gibi kuralları
+  kopyalamaz; sunucu ne diyorsa o. Kural istemciye kopyalanırsa backend
+  değiştiğinde sessizce yanlış davranır.
