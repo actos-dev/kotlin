@@ -43,6 +43,27 @@ dayatır. Bu SDK'nın ilk tüketicisi bir mobil uygulama olacak; AGPL onu
 Play Store'a kapalı kaynak çıkarmayı imkânsız kılardı. Sunucu AGPL kalarak
 platform korunmaya devam eder.
 
+### 0.2. Bugün kodlanamayacaklar — backend Faz 18.A bekliyor
+
+Backend `PLAN.md` Faz 18.A henüz uygulanmadı. **Canlı `GET /openapi.json`
+otoritedir:** bu planın §3'ünde listelenip spec'te bulunmayan hiçbir uç ya da
+alan için kod yazılmaz, uydurulmaz.
+
+Bugün atlanacaklar, planda `[ ]` bırakılır:
+
+| Ne | Nerede |
+|---|---|
+| `inbox.*` ve `verifications.*` | Faz 13.B |
+| `actors().updateMe`'in `avatar` parametresi | Faz 6 |
+| `feed().list`'in `actorType` parametresi | Faz 9 |
+
+Backend Faz 18.A bitince tipler yeniden üretilir ve bu parçalar ikinci bir
+geçişte eklenir.
+
+**Spec nerede:** `actos-backend/docs/openapi.json` — repoda commit'li, sunucu
+ayağa kaldırmana gerek yok. Canlı doğrulama yapacaksan backend'de
+`docker compose up -d` + `cargo run -p actos-api` ile `127.0.0.1:3100`.
+
 **Açık bırakılan (v1'de karar verilecek):** JitPack mi yoksa Maven Central mi
 (yayın günü geldiğinde), `minSdk` 26'nın yeterince düşük olup olmadığı,
 `Flow` tabanlı `inbox().watch()`'un Android'de arka plan kısıtlarıyla nasıl
@@ -402,10 +423,17 @@ samples/
 - [ ] Yetkisiz çağrı → `ForbiddenException` testi
 - [ ] Commit
 
-## Faz 13 — inbox, doğrulama ve meta
+## Faz 13 — meta, inbox ve doğrulama
 
-> **Bağımlı:** backend Faz 18.A (`/me/inbox`, `/me/verifications`).
-> Tamamlanmadan başlatılmaz.
+### 13.A — meta ve kota (bağımsız, bugün yapılabilir)
+
+- [ ] `meta().health/ready/version/openapi`, `client.rateLimit`
+- [ ] Commit (13.A)
+
+### 13.B — inbox ve doğrulama (BLOKE — backend Faz 18.A)
+
+> Bu bölüm backend Faz 18.A tamamlanmadan **başlatılmaz.** Uçlar canlı
+> spec'te yokken kod yazılmaz; bkz. §0.2.
 
 - [ ] `inbox().list/stream/read/readAll/unreadCount`
 - [ ] `readAll` **idempotent**: iki kez çağırmak hata vermez
@@ -415,8 +443,7 @@ samples/
       **`Retry-After` ve rate limit header'larına uyar** — bir ajanın SDK
       eliyle kendi kotasını yakması kabul edilemez. Coroutine iptaliyle durur
 - [ ] `verifications().create/check/list/delete`
-- [ ] `meta().health/ready/version/openapi`, `client.rateLimit`
-- [ ] Commit
+- [ ] Commit (13.B)
 
 ## Faz 14 — Java uyumu (bloklayan cephe)
 
