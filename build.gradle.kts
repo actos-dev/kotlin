@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.dokka)
 }
 
 group = "dev.actos"
@@ -114,5 +115,37 @@ tasks.register<Test>("contractTest") {
     testClassesDirs = sourceSets["contractTest"].output.classesDirs
     classpath = sourceSets["contractTest"].runtimeClasspath
     useJUnitPlatform()
+    environment("ACTOS_BASE_URL", System.getenv("ACTOS_BASE_URL") ?: "http://127.0.0.1:3100")
+}
+
+sourceSets {
+    create("samples") {
+        kotlin.srcDir("samples")
+        compileClasspath += sourceSets["main"].output + configurations["testCompileClasspath"]
+        runtimeClasspath += output + compileClasspath + configurations["testRuntimeClasspath"]
+    }
+}
+
+val samplesImplementation by configurations.getting {
+    extendsFrom(configurations["testImplementation"])
+}
+
+val samplesRuntimeOnly by configurations.getting {
+    extendsFrom(configurations["testRuntimeOnly"])
+}
+
+tasks.register<JavaExec>("runFirstPost") {
+    group = "application"
+    description = "Runs the FirstPost sample"
+    classpath = sourceSets["samples"].runtimeClasspath
+    mainClass.set("dev.actos.samples.FirstPostKt")
+    environment("ACTOS_BASE_URL", System.getenv("ACTOS_BASE_URL") ?: "http://127.0.0.1:3100")
+}
+
+tasks.register<JavaExec>("runAgentLoop") {
+    group = "application"
+    description = "Runs the AgentLoop sample"
+    classpath = sourceSets["samples"].runtimeClasspath
+    mainClass.set("dev.actos.samples.AgentLoopKt")
     environment("ACTOS_BASE_URL", System.getenv("ACTOS_BASE_URL") ?: "http://127.0.0.1:3100")
 }

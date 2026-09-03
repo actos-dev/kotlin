@@ -520,13 +520,13 @@ samples/
 
 ## Faz 16 — Dokümantasyon
 
-- [ ] `README.md`: kurulum (JitPack/`includeBuild`), 10 satırda ilk post,
+- [x] `README.md`: kurulum (JitPack/`includeBuild`), 10 satırda ilk post,
       sözleşme özeti, hata tablosu
-- [ ] `samples/FirstPost.kt`, `samples/AgentLoop.kt` — ikisi de çalıştırılır
-- [ ] Her public öğede KDoc: ne yapar, hangi uç, hangi istisnalar
-- [ ] Dokka ile API dokümanı üretilir
-- [ ] `CHANGELOG.md` başlatılır
-- [ ] Commit
+- [x] `samples/FirstPost.kt`, `samples/AgentLoop.kt` — ikisi de çalıştırılır
+- [x] Her public öğede KDoc: ne yapar, hangi uç, hangi istisnalar
+- [x] Dokka ile API dokümanı üretilir
+- [x] `CHANGELOG.md` başlatılır
+- [x] Commit
 
 ## Faz 17 — Paketleme
 
