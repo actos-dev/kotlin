@@ -330,22 +330,22 @@ samples/
 
 ## Faz 2 — Taşıma katmanı
 
-- [ ] `Transport.kt`: OkHttp istemcisi + interceptor zinciri
-- [ ] `Authorization: Bearer`, `User-Agent`, `Content-Type`
-- [ ] **`HttpLoggingInterceptor` kullanılıyorsa `redactHeader("Authorization")`** —
+- [x] `Transport.kt`: OkHttp istemcisi + interceptor zinciri
+- [x] `Authorization: Bearer`, `User-Agent`, `Content-Type`
+- [x] **`HttpLoggingInterceptor` kullanılıyorsa `redactHeader("Authorization")`** —
       Sözleşme §15, bu SDK'nın sorumluluğu, tüketiciye bırakılmaz
-- [ ] Zaman aşımı (30 sn), bağlantı havuzu, tüketicinin kendi `OkHttpClient`'ını
+- [x] Zaman aşımı (30 sn), bağlantı havuzu, tüketicinin kendi `OkHttpClient`'ını
       enjekte edebilmesi
-- [ ] Yeniden deneme: §2.6 kuralı, exponential + full jitter,
+- [x] Yeniden deneme: §2.6 kuralı, exponential + full jitter,
       `Retry-After` önceliği, `maxRetries` (varsayılan 2).
       **OkHttp'nin kendi `retryOnConnectionFailure`'ı yetmez** — kural
       metoda ve idempotency anahtarına bağlı, o yüzden elle uygulanır
-- [ ] `X-RateLimit-*` ayrıştırma → `RateLimit`
-- [ ] **Tüm ağ çağrıları `Dispatchers.IO` üzerinde** — ana iş parçacığından
+- [x] `X-RateLimit-*` ayrıştırma → `RateLimit`
+- [x] **Tüm ağ çağrıları `Dispatchers.IO` üzerinde** — ana iş parçacığından
       çağrılsa bile Android'de `NetworkOnMainThreadException` olmaz
-- [ ] Birim testleri (MockWebServer): retry sayısı, 4xx'te denememe,
+- [x] Birim testleri (MockWebServer): retry sayısı, 4xx'te denememe,
       idempotency'siz POST'ta 5xx denememe, `Retry-After`'a uyma
-- [ ] Commit
+- [x] Commit
 
 ## Faz 3 — Hata hiyerarşisi
 
