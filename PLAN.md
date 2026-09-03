@@ -453,10 +453,10 @@ samples/
 
 ## Faz 12 — reports ve admin
 
-- [ ] `reports().create`
-- [ ] `admin()` alt kaynakları (§3'teki 7 metot)
-- [ ] Yetkisiz çağrı → `ForbiddenException` testi
-- [ ] Commit
+- [x] `reports().create`
+- [x] `admin()` alt kaynakları (§3'teki 7 metot)
+- [x] Yetkisiz çağrı → `ForbiddenException` testi
+- [x] Commit
 
 ## Faz 13 — meta ve inbox
 
