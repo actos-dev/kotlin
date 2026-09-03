@@ -126,44 +126,66 @@ public class Transport(
         return Random.nextLong(0, capped + 1)
     }
 
-    public suspend fun execute(request: Request): Response =
+    public suspend fun execute(
+        request: Request,
+        throwOnError: Boolean = true,
+    ): Response =
         withContext(ioDispatcher) {
             val preparedRequest = prepareRequest(request)
-            var attempt = 0
-
-            while (true) {
-                val response: Response
-                try {
-                    response = okHttpClient.newCall(preparedRequest).execute()
-                } catch (e: IOException) {
-                    if (shouldRetryException(preparedRequest, attempt)) {
-                        val delayMs = calculateBackoffDelay(attempt, retryAfterSeconds = null)
-                        delay(delayMs)
-                        attempt++
-                        continue
-                    } else {
-                        throw e
-                    }
-                }
-
-                val parsedRateLimit = RateLimit.fromHeaders(response.headers)
-                if (parsedRateLimit != null) {
-                    atomicRateLimit.set(parsedRateLimit)
-                }
-
-                if (shouldRetryResponse(preparedRequest, response, attempt)) {
-                    val retryAfterSeconds = parsedRateLimit?.retryAfter
-                    val delayMs = calculateBackoffDelay(attempt, retryAfterSeconds)
-                    response.close()
-                    delay(delayMs)
-                    attempt++
-                    continue
-                }
-
-                return@withContext response
-            }
-            error("Unreachable")
+            executeAttempt(preparedRequest, attempt = 0, throwOnError = throwOnError)
         }
+
+    private suspend fun performHttpCall(
+        request: Request,
+        attempt: Int,
+    ): Response {
+        try {
+            return okHttpClient.newCall(request).execute()
+        } catch (e: java.net.SocketTimeoutException) {
+            if (shouldRetryException(request, attempt)) {
+                val delayMs = calculateBackoffDelay(attempt, retryAfterSeconds = null)
+                delay(delayMs)
+                return performHttpCall(request, attempt + 1)
+            }
+            throw ApiTimeoutException(e.message ?: "Request timed out", e)
+        } catch (e: IOException) {
+            if (shouldRetryException(request, attempt)) {
+                val delayMs = calculateBackoffDelay(attempt, retryAfterSeconds = null)
+                delay(delayMs)
+                return performHttpCall(request, attempt + 1)
+            }
+            throw ApiConnectionException(e.message ?: "Connection failed", e)
+        }
+    }
+
+    private suspend fun executeAttempt(
+        request: Request,
+        attempt: Int,
+        throwOnError: Boolean,
+    ): Response {
+        val response = performHttpCall(request, attempt)
+
+        val parsedRateLimit = RateLimit.fromHeaders(response.headers)
+        if (parsedRateLimit != null) {
+            atomicRateLimit.set(parsedRateLimit)
+        }
+
+        if (shouldRetryResponse(request, response, attempt)) {
+            val retryAfterSeconds = parsedRateLimit?.retryAfter
+            val delayMs = calculateBackoffDelay(attempt, retryAfterSeconds)
+            response.close()
+            delay(delayMs)
+            return executeAttempt(request, attempt + 1, throwOnError)
+        }
+
+        if (!response.isSuccessful && throwOnError) {
+            val bodyString = response.body?.string()
+            response.close()
+            throw createApiException(response, bodyString)
+        }
+
+        return response
+    }
 
     public suspend fun get(
         path: String,

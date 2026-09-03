@@ -349,13 +349,13 @@ samples/
 
 ## Faz 3 — Hata hiyerarşisi
 
-- [ ] `Errors.kt`: §4'teki sealed hiyerarşi
-- [ ] `application/problem+json` çözümleme; gövde bozuksa/boşsa status'e göre
+- [x] `Errors.kt`: §4'teki sealed hiyerarşi
+- [x] `application/problem+json` çözümleme; gövde bozuksa/boşsa status'e göre
       makul sınıfa düşme
-- [ ] `code` → sınıf tablosu; bilinmeyen kod → `ActosApiException` + `UNKNOWN`
-- [ ] `message`: `[404 NOT_FOUND] post not found (requestId=01a0…)`
-- [ ] Birim testleri: 12 kodun her biri doğru sınıfa eşleniyor
-- [ ] Commit
+- [x] `code` → sınıf tablosu; bilinmeyen kod → `ActosApiException` + `UNKNOWN`
+- [x] `message`: `[404 NOT_FOUND] post not found (requestId=01a0…)`
+- [x] Birim testleri: 12 kodun her biri doğru sınıfa eşleniyor
+- [x] Commit
 
 ## Faz 4 — İstemci ve sayfalama
 

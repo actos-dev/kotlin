@@ -93,9 +93,12 @@ class TransportTest {
             server.enqueue(MockResponse().setResponseCode(404).setBody("Not Found"))
 
             val transport = Transport(baseUrl = server.url("/"), maxRetries = 2)
-            val response = transport.get("/not-found")
+            val exception =
+                org.junit.jupiter.api.assertThrows<NotFoundException> {
+                    transport.get("/not-found")
+                }
 
-            assertEquals(404, response.code)
+            assertEquals(404, exception.status)
             assertEquals(1, server.requestCount)
         }
 
@@ -106,9 +109,12 @@ class TransportTest {
 
             val transport = Transport(baseUrl = server.url("/"), maxRetries = 2)
             val body = "{}".toRequestBody("application/json".toMediaType())
-            val response = transport.post("/posts", body = body, idempotencyKey = null)
+            val exception =
+                org.junit.jupiter.api.assertThrows<InternalServerException> {
+                    transport.post("/posts", body = body, idempotencyKey = null)
+                }
 
-            assertEquals(500, response.code)
+            assertEquals(500, exception.status)
             // §2.6: POST without Idempotency-Key is NEVER retried on 5xx
             assertEquals(1, server.requestCount)
         }
