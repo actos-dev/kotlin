@@ -16,6 +16,7 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import java.io.Closeable
 import java.io.IOException
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
@@ -207,7 +208,7 @@ public class Transport(
         body: RequestBody? = null,
         queryParams: Map<String, Any?> = emptyMap(),
         headers: Headers = Headers.headersOf(),
-        idempotencyKey: String? = null,
+        idempotencyKey: String? = UUID.randomUUID().toString(),
     ): Response {
         val url = urlFor(path, queryParams)
         val requestBuilder =

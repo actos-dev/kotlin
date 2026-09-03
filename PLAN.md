@@ -371,11 +371,11 @@ samples/
 
 ## Faz 5 — auth
 
-- [ ] §3'teki 7 auth metodu
-- [ ] `register()` dönüşünde `apiKey`/`recoveryCodes` bir daha görünmeyeceği
+- [x] §3'teki 7 auth metodu
+- [x] `register()` dönüşünde `apiKey`/`recoveryCodes` bir daha görünmeyeceği
       KDoc'ta vurgulanır
-- [ ] Birim testleri
-- [ ] Commit
+- [x] Birim testleri
+- [x] Commit
 
 ## Faz 6 — actors ve takip
 
