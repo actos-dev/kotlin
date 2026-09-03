@@ -115,7 +115,7 @@ public class Transport(
         }
     }
 
-    private fun calculateBackoffDelay(
+    internal fun calculateBackoffDelay(
         attempt: Int,
         retryAfterSeconds: Long?,
     ): Long {

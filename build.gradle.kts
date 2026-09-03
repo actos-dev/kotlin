@@ -92,3 +92,27 @@ val checkNoAndroidImports =
 tasks.named("check") {
     dependsOn(checkNoAndroidImports)
 }
+
+sourceSets {
+    create("contractTest") {
+        compileClasspath += sourceSets["main"].output + configurations["testCompileClasspath"]
+        runtimeClasspath += output + compileClasspath + configurations["testRuntimeClasspath"]
+    }
+}
+
+val contractTestImplementation by configurations.getting {
+    extendsFrom(configurations["testImplementation"])
+}
+
+val contractTestRuntimeOnly by configurations.getting {
+    extendsFrom(configurations["testRuntimeOnly"])
+}
+
+tasks.register<Test>("contractTest") {
+    description = "Runs contract tests against live backend."
+    group = "verification"
+    testClassesDirs = sourceSets["contractTest"].output.classesDirs
+    classpath = sourceSets["contractTest"].runtimeClasspath
+    useJUnitPlatform()
+    environment("ACTOS_BASE_URL", System.getenv("ACTOS_BASE_URL") ?: "http://127.0.0.1:3100")
+}

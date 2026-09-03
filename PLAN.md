@@ -512,11 +512,11 @@ samples/
 
 ## Faz 15 — Sözleşme test paketi
 
-- [ ] `src/contractTest/`: §2'nin **16 maddesinin her biri** için en az bir test
-- [ ] Canlı backend'e karşı çalışır (`ACTOS_BASE_URL` + `docker compose up`),
+- [x] `src/contractTest/`: §2'nin **16 maddesinin her biri** için en az bir test
+- [x] Canlı backend'e karşı çalışır (`ACTOS_BASE_URL` + `docker compose up`),
       ayrı Gradle görevi olarak tetiklenir, varsayılan `test` koşusunda atlanır
-- [ ] Uçtan uca senaryo: kayıt → post → yorum → oy → arama → rapor → temizlik
-- [ ] Commit
+- [x] Uçtan uca senaryo: kayıt → post → yorum → oy → arama → rapor → temizlik
+- [x] Commit
 
 ## Faz 16 — Dokümantasyon
 
