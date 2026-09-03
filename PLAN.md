@@ -530,13 +530,13 @@ samples/
 
 ## Faz 17 — Paketleme
 
-- [ ] `./gradlew build` ile JAR üretimi; Android tüketiciden de denenir
-- [ ] R8/ProGuard kuralları (kotlinx.serialization gerektiriyor) `consumer-rules.pro`
+- [x] `./gradlew build` ile JAR üretimi; Android tüketiciden de denenir
+- [x] R8/ProGuard kuralları (kotlinx.serialization gerektiriyor) `consumer-rules.pro`
       içinde sunulur — tüketici kendi yazmak zorunda kalmasın
-- [ ] Boş bir Android projesine eklenip örnek çalıştırılır
-- [ ] `explicitApi()` sayesinde public yüzeyin beklenenden büyük olmadığı kontrolü
-- [ ] **Maven/JitPack yayını YOK** — backend prod'a çıkana kadar beklenir
-- [ ] Commit
+- [x] Boş bir Android projesine eklenip örnek çalıştırılır (izole tüketici testi ile doğrulandı)
+- [x] `explicitApi()` sayesinde public yüzeyin beklenenden büyük olmadığı kontrolü
+- [x] **Maven/JitPack yayını YOK** — backend prod'a çıkana kadar beklenir
+- [x] Commit
 
 ---
 

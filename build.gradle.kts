@@ -19,6 +19,17 @@ kotlin {
     jvmToolchain(17)
 }
 
+java {
+    withSourcesJar()
+}
+
+tasks.named<Jar>("jar") {
+    from(file("consumer-rules.pro")) {
+        into("META-INF/proguard")
+        rename { "dev.actos.pro" }
+    }
+}
+
 apply(from = "gradle/openapi.gradle.kts")
 
 dependencies {
