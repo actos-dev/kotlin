@@ -462,8 +462,8 @@ samples/
 
 ### 13.A — meta ve kota
 
-- [ ] `meta().health/ready/version/openapi`, `client.rateLimit`
-- [ ] Commit (13.A)
+- [x] `meta().health/ready/version/openapi`, `client.rateLimit`
+- [x] Commit (13.A)
 
 ### 13.B — inbox
 
