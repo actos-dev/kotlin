@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.openapi.generator)
 }
 
 group = "dev.actos"
@@ -16,6 +17,8 @@ kotlin {
     explicitApi()
     jvmToolchain(17)
 }
+
+apply(from = "gradle/openapi.gradle.kts")
 
 dependencies {
     // OkHttp
@@ -37,9 +40,19 @@ tasks.test {
     useJUnitPlatform()
 }
 
+ktlint {
+    filter {
+        exclude("**/dev/actos/model/**")
+    }
+}
+
 detekt {
     config.setFrom(files("$projectDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    exclude("**/dev/actos/model/**")
 }
 
 val checkNoAndroidImports =

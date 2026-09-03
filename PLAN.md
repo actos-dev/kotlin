@@ -318,15 +318,15 @@ samples/
 
 ## Faz 1 — Tip üretim hattı
 
-- [ ] Gradle görevi: `GET /openapi.json` ya da yerel dosyadan
+- [x] Gradle görevi: `GET /openapi.json` ya da yerel dosyadan
       `openapi-generator` ile **yalnızca modeller** üretilir
       (`--global-property models`), hedef kotlinx.serialization
-- [ ] `--check` modu: üretilip mevcut dosyalarla karşılaştırılır, fark varsa
+- [x] `--check` modu: üretilip mevcut dosyalarla karşılaştırılır, fark varsa
       build kırılır (CI bunu çalıştırır)
-- [ ] Üretilen dosyalar commit'lenir (tüketici generator kurmak zorunda kalmasın)
-- [ ] Her dosyanın başına "ÜRETİLDİ — elle düzenleme" uyarısı
-- [ ] `Json { ignoreUnknownKeys = true }` (Sözleşme §16)
-- [ ] Commit
+- [x] Üretilen dosyalar commit'lenir (tüketici generator kurmak zorunda kalmasın)
+- [x] Her dosyanın başına "ÜRETİLDİ — elle düzenleme" uyarısı
+- [x] `Json { ignoreUnknownKeys = true }` (Sözleşme §16)
+- [x] Commit
 
 ## Faz 2 — Taşıma katmanı
 
