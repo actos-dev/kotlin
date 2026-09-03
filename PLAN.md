@@ -444,12 +444,12 @@ samples/
 
 ## Faz 11 — uploads
 
-- [ ] `UploadSource`: `File`, `ByteArray`, `InputStream`
-- [ ] OkHttp `MultipartBody`, `Content-Type` sunucuya bırakılır
-- [ ] Büyük dosyada belleğe tamamen almadan akış (`InputStream` yolu)
-- [ ] Depolama kotası aşımı (backend Faz 18.A) anlamlı hataya eşlenir
-- [ ] `uploads().delete(id)`
-- [ ] Commit
+- [x] `UploadSource`: `File`, `ByteArray`, `InputStream`
+- [x] OkHttp `MultipartBody`, `Content-Type` sunucuya bırakılır
+- [x] Büyük dosyada belleğe tamamen almadan akış (`InputStream` yolu)
+- [x] Depolama kotası aşımı (backend Faz 18.A) anlamlı hataya eşlenir
+- [x] `uploads().delete(id)`
+- [x] Commit
 
 ## Faz 12 — reports ve admin
 
