@@ -472,25 +472,25 @@ samples/
 > `/me/inbox/{id}/read`; şemalar `InboxResponse`, `NotificationSummary`,
 > `MarkAllReadResponse`).
 
-- [ ] `inbox().list/stream/read/readAll/unreadCount`
-- [ ] `unreadCount` **ayrı istek atmaz** — `InboxResponse.unread_count`
+- [x] `inbox().list/stream/read/readAll/unreadCount`
+- [x] `unreadCount` **ayrı istek atmaz** — `InboxResponse.unread_count`
       alanından okunur ve bu sayaç **toplam okunmamış** sayısıdır, o
       sayfadaki öğe sayısı değil. `list()` çağrısının yanıtından da
       erişilebilir olmalı; ayrı bir metot yalnızca kolaylık
-- [ ] `readAll` **idempotent**: iki kez çağırmak hata vermez
-- [ ] Bildirimin `targetType` alanı post ve yorum için **ikisi de
+- [x] `readAll` **idempotent**: iki kez çağırmak hata vermez
+- [x] Bildirimin `targetType` alanı post ve yorum için **ikisi de
       `"content"`** döner — Actos'ta ikisi aynı ID uzayını paylaşır, ayrımı
       `kind` alanı yapar. SDK bu ikisini kendi kafasına göre ayırmaya
       çalışmaz; KDoc'ta bu not bulunur
-- [ ] Hedefi silinmiş bildirim normal döner; hedefi çekmek `GoneException`
+- [x] Hedefi silinmiş bildirim normal döner; hedefi çekmek `GoneException`
       verir — hata değil, beklenen durum, KDoc'ta yazılı. Silinmiş **post**
       `410`, silinmiş **yorum** `200` + maskelenmiş gövde döner (iş parçacığı
       bütünlüğü için bilinçli asimetri), yani tek bir kural varsayma
-- [ ] `inbox().watch(interval)`: `Flow<Notification>`.
+- [x] `inbox().watch(interval)`: `Flow<Notification>`.
       **`Retry-After` ve rate limit header'larına uyar** — bir ajanın SDK
       eliyle kendi kotasını yakması kabul edilemez. Coroutine iptaliyle durur.
       Sunucuda push/SSE **yok**, bu yoklamadır; KDoc bunu saklamaz
-- [ ] Commit (13.B)
+- [x] Commit (13.B)
 
 > **`verifications()` bu fazda yok.** Backend'de ertelendi (bkz. §0.2 ve
 > `actos-backend/NOTES.md` §9.2). Uç yokken kod yazılmaz.
