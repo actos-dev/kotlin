@@ -359,15 +359,15 @@ samples/
 
 ## Faz 4 — İstemci ve sayfalama
 
-- [ ] `Actos` sınıfı: `apiKey`, `baseUrl`, `timeout`, `maxRetries`,
+- [x] `Actos` sınıfı: `apiKey`, `baseUrl`, `timeout`, `maxRetries`,
       `okHttpClient` (opsiyonel enjeksiyon); `Closeable`
-- [ ] `toString()` api key'i maskeler
-- [ ] `Pagination.kt`: `Page<T>` (`items` + `nextCursor`) ve `Flow<T>` üreteci;
+- [x] `toString()` api key'i maskeler
+- [x] `Pagination.kt`: `Page<T>` (`items` + `nextCursor`) ve `Flow<T>` üreteci;
       tüm `stream*` metotları bunu kullanır
-- [ ] **`Flow` iptal edilebilir olmalı** — coroutine iptal edilince yoklama
+- [x] **`Flow` iptal edilebilir olmalı** — coroutine iptal edilince yoklama
       durur; durmayan bir akış sızıntıdır
-- [ ] `client.request()` kaçış kapağı
-- [ ] Commit
+- [x] `client.request()` kaçış kapağı
+- [x] Commit
 
 ## Faz 5 — auth
 
