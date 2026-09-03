@@ -397,19 +397,19 @@ samples/
 
 ## Faz 7 — posts
 
-- [ ] `create` / `get` / `update` / `delete`
-- [ ] Otomatik `Idempotency-Key` (§2.9), `null` ile kapatılabilir
-- [ ] `fields` desteği (`get`)
-- [ ] **`bodyHtml` tuzağı:** tekil uçlarda (`GET /posts/{id}`) her zaman dolu,
+- [x] `create` / `get` / `update` / `delete`
+- [x] Otomatik `Idempotency-Key` (§2.9), `null` ile kapatılabilir
+- [x] `fields` desteği (`get`)
+- [x] **`bodyHtml` tuzağı:** tekil uçlarda (`GET /posts/{id}`) her zaman dolu,
       **liste uçlarında yalnızca `fields` içinde `body_html` istenirse** dolu
       gelir (gövde boyutu gerekçesiyle; backend Faz 18.A). SDK bunu
       gizlemez ve kendisi doldurmaya çalışmaz — alan `String?` kalır ve
       KDoc "listede istemezsen `null` gelir" der. Sunucuda okuma anında
       hesaplanır, saklanmaz; `bodyFormat == "plain"` içerikte markdown
       **render edilmez**, sadece kaçışlanır
-- [ ] Silinmiş içerikte `bodyHtml`, `body` ile aynı maskeleme kuralına uyar
-- [ ] `delete` sonrası `get` → `GoneException` testi
-- [ ] Commit
+- [x] Silinmiş içerikte `bodyHtml`, `body` ile aynı maskeleme kuralına uyar
+- [x] `delete` sonrası `get` → `GoneException` testi
+- [x] Commit
 
 ## Faz 8 — comments
 
