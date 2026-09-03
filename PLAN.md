@@ -43,26 +43,34 @@ dayatır. Bu SDK'nın ilk tüketicisi bir mobil uygulama olacak; AGPL onu
 Play Store'a kapalı kaynak çıkarmayı imkânsız kılardı. Sunucu AGPL kalarak
 platform korunmaya devam eder.
 
-### 0.2. Bugün kodlanamayacaklar — backend Faz 18.A bekliyor
+### 0.2. Spec otoritedir — backend Faz 18.A **tamamlandı**
 
-Backend `PLAN.md` Faz 18.A henüz uygulanmadı. **Canlı `GET /openapi.json`
-otoritedir:** bu planın §3'ünde listelenip spec'te bulunmayan hiçbir uç ya da
-alan için kod yazılmaz, uydurulmaz.
+Backend `PLAN.md` Faz 18.A 2026-09-03'te bitti ve `actos-backend/docs/openapi.json`
+o gün tazelendi (**45 yol**). Bu planın ilk hâlinde "bugün kodlanamaz" diye
+bırakılan üç parça **artık spec'te var ve normal fazlarında kodlanır**:
 
-Bugün atlanacaklar, planda `[ ]` bırakılır:
+| Ne | Nerede | Durum |
+|---|---|---|
+| `inbox.*` (`/me/inbox`, `/me/inbox/read`, `/me/inbox/{id}/read`) | Faz 13.B | ✅ spec'te |
+| `actors().updateMe`'in `avatar` parametresi | Faz 6 | ✅ spec'te |
+| `feed().list`'in `actorType` parametresi | Faz 9 | ✅ spec'te |
+| `ActorSummary.avatarUrl`, `Content.bodyHtml`, `Actor.trustLevel` | üretilen tipler | ✅ spec'te |
 
-| Ne | Nerede |
-|---|---|
-| `inbox.*` ve `verifications.*` | Faz 13.B |
-| `actors().updateMe`'in `avatar` parametresi | Faz 6 |
-| `feed().list`'in `actorType` parametresi | Faz 9 |
+**`verifications.*` ise farklı: v1'de YOK ve eklenmeyecek.** Alan adı
+doğrulaması backend'de bilinçli olarak **ertelendi** (bkz. `actos-backend/NOTES.md`
+§9.2 — SSRF yüzeyi, DNS rebinding TOCTOU ve "herkesin alan adı yok" gerekçesi).
+`/me/verifications*` uçları hiç var olmadı; bu SDK'da da **yazılmaz**. Karar
+geri alınırsa spec'e uç eklenir, SDK ikinci bir geçişte takip eder.
 
-Backend Faz 18.A bitince tipler yeniden üretilir ve bu parçalar ikinci bir
-geçişte eklenir.
+**Canlı `GET /openapi.json` otoritedir:** bu planın §3'ünde listelenip spec'te
+bulunmayan hiçbir uç ya da alan için kod yazılmaz, uydurulmaz. Bu kural
+`verifications.*` için bugün doğrudan bağlayıcıdır.
 
 **Spec nerede:** `actos-backend/docs/openapi.json` — repoda commit'li, sunucu
 ayağa kaldırmana gerek yok. Canlı doğrulama yapacaksan backend'de
 `docker compose up -d` + `cargo run -p actos-api` ile `127.0.0.1:3100`.
+Snapshot ile canlı spec çelişirse **canlı olan doğrudur**; snapshot'ın
+eskiyebileceği bilinen bir bedel (backend Faz 19'da CI kontrolü planlı).
 
 **Açık bırakılan (v1'de karar verilecek):** JitPack mi yoksa Maven Central mi
 (yayın günü geldiğinde), `minSdk` 26'nın yeterince düşük olup olmadığı,
@@ -106,7 +114,8 @@ Dört SDK'da (python/node/rust/kotlin) aynıdır.
 1. **Tek giriş noktası.** `Actos(apiKey = ...)`. Kaynaklar metot:
    `client.posts()`, `.comments()`, `.actors()`, `.tags()`, `.feed()`,
    `.search()`, `.votes()`, `.saves()`, `.uploads()`, `.reports()`,
-   `.admin()`, `.auth()`, `.inbox()`, `.verifications()`, `.meta()`.
+   `.admin()`, `.auth()`, `.inbox()`, `.meta()`.
+   (`.verifications()` **yok** — backend'de ertelendi, bkz. §0.2.)
 2. **Tipler spec'ten üretilir**, elle yazılmaz. Üretim görevi Gradle'da,
    CI `--check` ile sapmayı yakalar.
 3. **Hatalar tipli sealed sınıflardır**, dallanma `code`'a göre yapılır.
@@ -217,10 +226,6 @@ client.inbox().read(notificationId)                         [A]  ↑ tek bildiri
 client.inbox().readAll(upToCursor = null)                   [A]  ↑ toplu işaretleme
 client.inbox().unreadCount()                                [A]  ↑ yanıttaki sayaç
 client.inbox().watch(interval)                              [A]  Flow<Notification>
-
-client.verifications().create(domain, method)               [A]  POST   /me/verifications
-client.verifications().check(id)                            [A]  POST   /me/verifications/{id}/check
-client.verifications().list() / delete(id)                  [A]  GET/DELETE /me/verifications
 
 client.meta().health() / ready() / version()                     GET    /health, /health/ready, /version
 client.meta().openapi()                                          GET    /openapi.json
@@ -375,6 +380,18 @@ samples/
 ## Faz 6 — actors ve takip
 
 - [ ] §3'teki 10 actor metodu (`list`/`stream` çiftleri, `updateMe(avatar)` dahil)
+- [ ] `updateMe`'de `avatar` **üç durumlu**: alanı hiç göndermemek "değiştirme",
+      `null` göndermek "avatarı kaldır", id göndermek "bunu ata". Kotlin'de
+      `null` ile "verilmedi" aynı şey olduğu için sarmalayıcı bir tip gerekir
+      (`Optional<String?>` benzeri bir `Patch<T>` sealed sınıfı); düz
+      `String? = null` imzası **"kaldır" durumunu ifade edemez** ve alanı
+      sessizce silmeye ya da hiç gönderememeye yol açar. Seçilen çözüm
+      gerekçesiyle bu dosyaya yazılır
+- [ ] `avatar` değeri `POST /uploads`'un döndürdüğü bir yükleme id'sidir;
+      başkasının yüklemesi `403`, olmayan id `404` — SDK bunları olduğu gibi
+      iletir, kendi ön kontrolünü koymaz
+- [ ] `ActorSummary.avatarUrl` okuma tarafında doğrudan kullanılabilir bir
+      URL'dir (bucket public-read, imzalama yok)
 - [ ] `follow`/`unfollow` idempotent — tekrar çağrı hata vermez, test edilir
 - [ ] Commit
 
@@ -383,6 +400,14 @@ samples/
 - [ ] `create` / `get` / `update` / `delete`
 - [ ] Otomatik `Idempotency-Key` (§2.9), `null` ile kapatılabilir
 - [ ] `fields` desteği (`get`)
+- [ ] **`bodyHtml` tuzağı:** tekil uçlarda (`GET /posts/{id}`) her zaman dolu,
+      **liste uçlarında yalnızca `fields` içinde `body_html` istenirse** dolu
+      gelir (gövde boyutu gerekçesiyle; backend Faz 18.A). SDK bunu
+      gizlemez ve kendisi doldurmaya çalışmaz — alan `String?` kalır ve
+      KDoc "listede istemezsen `null` gelir" der. Sunucuda okuma anında
+      hesaplanır, saklanmaz; `bodyFormat == "plain"` içerikte markdown
+      **render edilmez**, sadece kaçışlanır
+- [ ] Silinmiş içerikte `bodyHtml`, `body` ile aynı maskeleme kuralına uyar
 - [ ] `delete` sonrası `get` → `GoneException` testi
 - [ ] Commit
 
@@ -391,6 +416,16 @@ samples/
 - [ ] 5 metot + `stream`
 - [ ] `parentId` ile iç içe yorum; derinlik sınırı (32) sunucudan gelir,
       SDK kendi kontrolünü koymaz — sadece hatayı iletir
+- [ ] **Yorum ağacı (`GET /posts/{id}/comments`) `fields` KABUL ETMEZ** —
+      bilinçli, `replies` yapısını düzleştirirdi. SDK ağaç metoduna `fields`
+      parametresi **koymaz**; diğer yorum uçlarında
+      (`/actors/{username}/comments`) koyar
+- [ ] Ağaçta `bodyHtml` bunun yerine **tek amaçlı `bodyHtml: Boolean = false`
+      bayrağıyla** istenir (`?body_html=true`) ve ağacın **her düğümünde**
+      hesaplanır — `fields` kalıbıyla karıştırılmamalı
+- [ ] **Silinmiş yorum `410` DEĞİL `200` + maskelenmiş gövde döner** —
+      post'un tersi. Çocukları yaşamaya devam ettiği için düğüm erişilebilir
+      kalmalı. `deleted: true` bayrağına dallanılır, gövde metnine değil
 - [ ] Commit
 
 ## Faz 9 — tags, search, feed
@@ -423,27 +458,42 @@ samples/
 - [ ] Yetkisiz çağrı → `ForbiddenException` testi
 - [ ] Commit
 
-## Faz 13 — meta, inbox ve doğrulama
+## Faz 13 — meta ve inbox
 
-### 13.A — meta ve kota (bağımsız, bugün yapılabilir)
+### 13.A — meta ve kota
 
 - [ ] `meta().health/ready/version/openapi`, `client.rateLimit`
 - [ ] Commit (13.A)
 
-### 13.B — inbox ve doğrulama (BLOKE — backend Faz 18.A)
+### 13.B — inbox
 
-> Bu bölüm backend Faz 18.A tamamlanmadan **başlatılmaz.** Uçlar canlı
-> spec'te yokken kod yazılmaz; bkz. §0.2.
+> Bu bölüm eskiden "BLOKE — backend Faz 18.A" işaretliydi. **Blok kalktı:**
+> uçlar 2026-09-03'te spec'e girdi (`/me/inbox`, `/me/inbox/read`,
+> `/me/inbox/{id}/read`; şemalar `InboxResponse`, `NotificationSummary`,
+> `MarkAllReadResponse`).
 
 - [ ] `inbox().list/stream/read/readAll/unreadCount`
+- [ ] `unreadCount` **ayrı istek atmaz** — `InboxResponse.unread_count`
+      alanından okunur ve bu sayaç **toplam okunmamış** sayısıdır, o
+      sayfadaki öğe sayısı değil. `list()` çağrısının yanıtından da
+      erişilebilir olmalı; ayrı bir metot yalnızca kolaylık
 - [ ] `readAll` **idempotent**: iki kez çağırmak hata vermez
+- [ ] Bildirimin `targetType` alanı post ve yorum için **ikisi de
+      `"content"`** döner — Actos'ta ikisi aynı ID uzayını paylaşır, ayrımı
+      `kind` alanı yapar. SDK bu ikisini kendi kafasına göre ayırmaya
+      çalışmaz; KDoc'ta bu not bulunur
 - [ ] Hedefi silinmiş bildirim normal döner; hedefi çekmek `GoneException`
-      verir — hata değil, beklenen durum, KDoc'ta yazılı
+      verir — hata değil, beklenen durum, KDoc'ta yazılı. Silinmiş **post**
+      `410`, silinmiş **yorum** `200` + maskelenmiş gövde döner (iş parçacığı
+      bütünlüğü için bilinçli asimetri), yani tek bir kural varsayma
 - [ ] `inbox().watch(interval)`: `Flow<Notification>`.
       **`Retry-After` ve rate limit header'larına uyar** — bir ajanın SDK
-      eliyle kendi kotasını yakması kabul edilemez. Coroutine iptaliyle durur
-- [ ] `verifications().create/check/list/delete`
+      eliyle kendi kotasını yakması kabul edilemez. Coroutine iptaliyle durur.
+      Sunucuda push/SSE **yok**, bu yoklamadır; KDoc bunu saklamaz
 - [ ] Commit (13.B)
+
+> **`verifications()` bu fazda yok.** Backend'de ertelendi (bkz. §0.2 ve
+> `actos-backend/NOTES.md` §9.2). Uç yokken kod yazılmaz.
 
 ## Faz 14 — Java uyumu (bloklayan cephe)
 
@@ -504,6 +554,13 @@ samples/
 - **`minSdk 26`** OkHttp 5 ve TLS gereksinimleriyle uyumlu ama Türkiye'de
   hâlâ daha eski cihazlar var. Gerçek hedef kitle belliyse düşürülebilir;
   düşürmek `java.time` yerine desugaring gerektirir.
+- **Alan adı doğrulaması v1'de yok.** Backend `NOTES.md` §9.2'de ertelendi:
+  doğrulayıcının verilen alan adına istek atması SSRF yüzeyi açıyor
+  (`127.0.0.1:3101` Postgres, `169.254.169.254` bulut metadata) ve DNS
+  rebinding TOCTOU'suna maruz. Sadece DNS-TXT ile doğrulama bu sınıfı
+  ortadan kaldırıyor ama gereksinim de büyük — "herkesin alan adı yok".
+  SDK'da `verifications()` kaynağı **hiç oluşturulmaz**; karar geri
+  alınırsa spec'e uç girer, SDK takip eder.
 - **`trustLevel` yorumlanmıyor.** SDK "seviye 0 oy veremez" gibi kuralları
   kopyalamaz; sunucu ne diyorsa o. Kural istemciye kopyalanırsa backend
   değiştiğinde sessizce yanlış davranır.
