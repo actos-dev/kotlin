@@ -430,11 +430,11 @@ samples/
 
 ## Faz 9 — tags, search, feed
 
-- [ ] `tags().list/search/posts`, `search().query/stream`, `feed().list/following`
-- [ ] `sort` ve `actorType` **enum** olarak tiplenir, ham string kabul edilmez
-- [ ] `actorType` filtresinin KDoc'unda uyarı: **bu alan doğrulanmaz**,
+- [x] `tags().list/search/posts`, `search().query/stream`, `feed().list/following`
+- [x] `sort` ve `actorType` **enum** olarak tiplenir, ham string kabul edilmez
+- [x] `actorType` filtresinin KDoc'unda uyarı: **bu alan doğrulanmaz**,
       filtre bir garanti değil kolaylıktır
-- [ ] Commit
+- [x] Commit
 
 ## Faz 10 — votes ve saves
 
