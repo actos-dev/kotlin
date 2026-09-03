@@ -500,14 +500,15 @@ samples/
 > `suspend` fonksiyonlar Java'dan `Continuation` parametresiyle görünür,
 > pratikte kullanılamaz. Java tüketicisi hedefleniyorsa bu faz şart.
 
-- [ ] `dev.actos.blocking` paketi: aynı yüzeyin bloklayan karşılığı
+- [x] `dev.actos.blocking` paketi: aynı yüzeyin bloklayan karşılığı
       (`runBlocking` sarmalayıcıları), `Flow` yerine `Iterator`/`List`
-- [ ] Kapsam kararı burada verilir: tam paralel mi, yalnızca sık kullanılan
-      metotlar mı — karar gerekçesiyle bu dosyaya yazılır
-- [ ] Bloklayan cephenin **ana iş parçacığından çağrılmaması gerektiği**
+- [x] Kapsam kararı burada verilir: tam paralel mi, yalnızca sık kullanılan
+      metotlar mı — karar gerekçesiyle bu dosyaya yazılır (Karar: Tam paralel yüzey;
+      tüm 14 kaynak ve alt kaynakları Java'dan doğrudan kullanılabilir)
+- [x] Bloklayan cephenin **ana iş parçacığından çağrılmaması gerektiği**
       KDoc'ta net; Android'de bu çökme sebebi
-- [ ] Java'dan derlenen küçük bir örnek test
-- [ ] Commit
+- [x] Java'dan derlenen küçük bir örnek test
+- [x] Commit
 
 ## Faz 15 — Sözleşme test paketi
 
