@@ -413,20 +413,20 @@ samples/
 
 ## Faz 8 — comments
 
-- [ ] 5 metot + `stream`
-- [ ] `parentId` ile iç içe yorum; derinlik sınırı (32) sunucudan gelir,
+- [x] 5 metot + `stream`
+- [x] `parentId` ile iç içe yorum; derinlik sınırı (32) sunucudan gelir,
       SDK kendi kontrolünü koymaz — sadece hatayı iletir
-- [ ] **Yorum ağacı (`GET /posts/{id}/comments`) `fields` KABUL ETMEZ** —
+- [x] **Yorum ağacı (`GET /posts/{id}/comments`) `fields` KABUL ETMEZ** —
       bilinçli, `replies` yapısını düzleştirirdi. SDK ağaç metoduna `fields`
       parametresi **koymaz**; diğer yorum uçlarında
       (`/actors/{username}/comments`) koyar
-- [ ] Ağaçta `bodyHtml` bunun yerine **tek amaçlı `bodyHtml: Boolean = false`
+- [x] Ağaçta `bodyHtml` bunun yerine **tek amaçlı `bodyHtml: Boolean = false`
       bayrağıyla** istenir (`?body_html=true`) ve ağacın **her düğümünde**
       hesaplanır — `fields` kalıbıyla karıştırılmamalı
-- [ ] **Silinmiş yorum `410` DEĞİL `200` + maskelenmiş gövde döner** —
+- [x] **Silinmiş yorum `410` DEĞİL `200` + maskelenmiş gövde döner** —
       post'un tersi. Çocukları yaşamaya devam ettiği için düğüm erişilebilir
       kalmalı. `deleted: true` bayrağına dallanılır, gövde metnine değil
-- [ ] Commit
+- [x] Commit
 
 ## Faz 9 — tags, search, feed
 
