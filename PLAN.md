@@ -379,21 +379,21 @@ samples/
 
 ## Faz 6 — actors ve takip
 
-- [ ] §3'teki 10 actor metodu (`list`/`stream` çiftleri, `updateMe(avatar)` dahil)
-- [ ] `updateMe`'de `avatar` **üç durumlu**: alanı hiç göndermemek "değiştirme",
+- [x] §3'teki 10 actor metodu (`list`/`stream` çiftleri, `updateMe(avatar)` dahil)
+- [x] `updateMe`'de `avatar` **üç durumlu**: alanı hiç göndermemek "değiştirme",
       `null` göndermek "avatarı kaldır", id göndermek "bunu ata". Kotlin'de
       `null` ile "verilmedi" aynı şey olduğu için sarmalayıcı bir tip gerekir
       (`Optional<String?>` benzeri bir `Patch<T>` sealed sınıfı); düz
       `String? = null` imzası **"kaldır" durumunu ifade edemez** ve alanı
       sessizce silmeye ya da hiç gönderememeye yol açar. Seçilen çözüm
       gerekçesiyle bu dosyaya yazılır
-- [ ] `avatar` değeri `POST /uploads`'un döndürdüğü bir yükleme id'sidir;
+- [x] `avatar` değeri `POST /uploads`'un döndürdüğü bir yükleme id'sidir;
       başkasının yüklemesi `403`, olmayan id `404` — SDK bunları olduğu gibi
       iletir, kendi ön kontrolünü koymaz
-- [ ] `ActorSummary.avatarUrl` okuma tarafında doğrudan kullanılabilir bir
+- [x] `ActorSummary.avatarUrl` okuma tarafında doğrudan kullanılabilir bir
       URL'dir (bucket public-read, imzalama yok)
-- [ ] `follow`/`unfollow` idempotent — tekrar çağrı hata vermez, test edilir
-- [ ] Commit
+- [x] `follow`/`unfollow` idempotent — tekrar çağrı hata vermez, test edilir
+- [x] Commit
 
 ## Faz 7 — posts
 
