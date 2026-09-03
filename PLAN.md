@@ -305,16 +305,16 @@ samples/
 
 ## Faz 0 — Repo iskeleti
 
-- [ ] Gradle (Kotlin DSL) + version catalog; `actos` kütüphane modülü
-- [ ] Kotlin `explicitApi()`, JVM 17 hedefi, Android `minSdk 26` uyumluluğu
-- [ ] Bağımlılıklar: OkHttp, kotlinx.serialization, kotlinx.coroutines
-- [ ] **Android bağımlılığı yasağı testi:** `android.*` içe aktarımı varsa
+- [x] Gradle (Kotlin DSL) + version catalog; `actos` kütüphane modülü
+- [x] Kotlin `explicitApi()`, JVM 17 hedefi, Android `minSdk 26` uyumluluğu
+- [x] Bağımlılıklar: OkHttp, kotlinx.serialization, kotlinx.coroutines
+- [x] **Android bağımlılığı yasağı testi:** `android.*` içe aktarımı varsa
       build kırılır (basit bir Gradle görevi ya da detekt kuralı)
-- [ ] ktlint + detekt
-- [ ] `LICENSE` (Apache-2.0), `README.md` iskeleti, `.gitignore`
-- [ ] `.github/workflows/ci.yml`: ktlint + detekt + test + build.
+- [x] ktlint + detekt
+- [x] `LICENSE` (Apache-2.0), `README.md` iskeleti, `.gitignore`
+- [x] `.github/workflows/ci.yml`: ktlint + detekt + test + build.
       **Yayın job'u yok**
-- [ ] Commit
+- [x] Commit
 
 ## Faz 1 — Tip üretim hattı
 
