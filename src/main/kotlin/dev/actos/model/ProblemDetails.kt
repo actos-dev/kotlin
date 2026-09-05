@@ -24,40 +24,40 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * RFC 9457 \"problem details\" gövdesi.  `pub(crate)` (özel değil): Faz 16'nın OpenAPI şeması bu tipi tek bir bileşen (`components.schemas.ProblemDetails`) olarak her hata yanıtında referans veriyor (bkz. `crate::openapi` modülü) — bunun için diğer `routes/_*.rs` dosyalarından görünür olması gerekiyor.
+ * An RFC 9457 \"problem details\" body.  `pub(crate)` rather than private: the OpenAPI schema references this type as a single component (`components.schemas.ProblemDetails`) from every error response, so it has to be visible from the other `routes/_*.rs` files.
  *
- * @param code Makine-okunur kod — istemciler `title` metnine değil buna bakmalı.
- * @param status HTTP durum kodu (gövdede de bulunması RFC'nin önerisi).
- * @param title Kısa, insan-okunur özet.
- * @param type Hata tipini tanımlayan URI (dokümantasyona işaret eder).
- * @param detail Bu spesifik oluşuma dair açıklama. İç hatalarda yok.
- * @param requestId Destek/hata ayıklama için istek kimliği.
+ * @param code The machine-readable code — clients should branch on this, not on the `title` text.
+ * @param status The HTTP status code (the RFC recommends repeating it in the body).
+ * @param title A short, human-readable summary.
+ * @param type URI identifying the error type (it points at the documentation).
+ * @param detail An explanation of this specific occurrence. Absent on internal errors.
+ * @param requestId Request id, for support and debugging.
  */
 @Serializable
 
 public data class ProblemDetails (
 
-    /* Makine-okunur kod — istemciler `title` metnine değil buna bakmalı. */
+    /* The machine-readable code — clients should branch on this, not on the `title` text. */
     @Contextual @SerialName(value = "code")
     val code: ErrorCode,
 
-    /* HTTP durum kodu (gövdede de bulunması RFC'nin önerisi). */
+    /* The HTTP status code (the RFC recommends repeating it in the body). */
     @SerialName(value = "status")
     val status: kotlin.Int,
 
-    /* Kısa, insan-okunur özet. */
+    /* A short, human-readable summary. */
     @SerialName(value = "title")
     val title: kotlin.String,
 
-    /* Hata tipini tanımlayan URI (dokümantasyona işaret eder). */
+    /* URI identifying the error type (it points at the documentation). */
     @SerialName(value = "type")
     val type: kotlin.String,
 
-    /* Bu spesifik oluşuma dair açıklama. İç hatalarda yok. */
+    /* An explanation of this specific occurrence. Absent on internal errors. */
     @SerialName(value = "detail")
     val detail: kotlin.String? = null,
 
-    /* Destek/hata ayıklama için istek kimliği. */
+    /* Request id, for support and debugging. */
     @SerialName(value = "request_id")
     val requestId: kotlin.String? = null
 

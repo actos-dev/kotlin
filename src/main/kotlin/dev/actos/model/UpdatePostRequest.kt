@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PATCH /posts/{id}` istek gövdesi.  Kasıtlı olarak `Option<String>` — `Option<Option<String>>` DEĞİL: bir post'un `title`'ı şema seviyesinde `NOT NULL` (bkz. `migrations/0005_contents.up.sql` → `ck_contents_shape`), yani \"temizle\" diye bir durum yok, yalnızca \"dokunma\" (`None`) / \"güncelle\" (`Some(v)`) ayrımı var. `actos_types::actor::UpdateProfileRequest`'in çift-`Option` kalıbı burada gereksiz.
+ * Request body of `PATCH /posts/{id}`.  Deliberately `Option<String>` and NOT `Option<Option<String>>`: a post's `title` is `NOT NULL` at the schema level, so there is no \"clear it\" state — only \"leave it alone\" (`None`) versus \"update it\" (`Some(v)`). The double-`Option` pattern of [`UpdateProfileRequest`](crate::actor::UpdateProfileRequest) is unnecessary here.
  *
  * @param body 
  * @param title 

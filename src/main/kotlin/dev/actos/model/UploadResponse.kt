@@ -23,13 +23,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /uploads` yanıtı ve bir içeriğin eklerinin gösterimi.  `url` ve `thumbnail_url` **doğrudan kullanılabilir**: bucket public-read olduğu için imzalama ya da ikinci bir çağrı gerekmiyor (bkz. PLAN.md Faz 13 — ileride private + presigned URL'ye geçilebilir, o zaman bu alanların anlamı değil yalnızca ömrü değişir).
+ * Response of `POST /uploads`, and how a content's attachments are shown.  `url` and `thumbnail_url` are **directly usable**: the bucket is public-read, so neither signing nor a second call is needed (see PLAN.md phase 13 — a move to private + presigned URLs is possible later, and it would change only the lifetime of these fields, not their meaning).
  *
  * @param byteSize 
- * @param checksumSha256 Saklanan (normalize edilmiş) dosyanın SHA-256'sı, hex.
+ * @param checksumSha256 SHA-256 of the stored (normalized) file, hex-encoded.
  * @param createdAt RFC 3339.
  * @param id 
- * @param mimeType Normalize sonrası her zaman `image/webp`.
+ * @param mimeType Always `image/webp` after normalization.
  * @param thumbnailUrl 
  * @param url 
  * @param height 
@@ -42,7 +42,7 @@ public data class UploadResponse (
     @SerialName(value = "byte_size")
     val byteSize: kotlin.Long,
 
-    /* Saklanan (normalize edilmiş) dosyanın SHA-256'sı, hex. */
+    /* SHA-256 of the stored (normalized) file, hex-encoded. */
     @SerialName(value = "checksum_sha256")
     val checksumSha256: kotlin.String,
 
@@ -53,7 +53,7 @@ public data class UploadResponse (
     @SerialName(value = "id")
     val id: kotlin.String,
 
-    /* Normalize sonrası her zaman `image/webp`. */
+    /* Always `image/webp` after normalization. */
     @SerialName(value = "mime_type")
     val mimeType: kotlin.String,
 

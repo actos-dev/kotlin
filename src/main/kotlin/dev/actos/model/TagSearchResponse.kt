@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /tags/search?q=` yanıtı.  Sayfalama yok: sonuç sayısı `actos_core::tag::SEARCH_LIMIT` ile sabit bir tavana bağlı — otomatik tamamlama listesinin ikinci sayfası diye bir şey yok, kullanıcı yazmaya devam ederek daraltır.
+ * Response of `GET /tags/search?q=`.  No pagination: the number of results is bounded by a fixed server-side ceiling — there is no such thing as a second page of an autocomplete list, the user narrows it by typing more.
  *
  * @param tags 
  */

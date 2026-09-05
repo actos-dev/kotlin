@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * API'nin döndürebileceği makine-okunur hata kodları.  Yanıt gövdesinde `code` alanında string olarak taşınır (`\"RATE_LIMITED\"`). Bu liste bir sözleşmedir: var olan bir kodun anlamı değiştirilmez, sadece yenisi eklenir.
+ * Machine-readable error codes the API can return.  Carried as a string in the `code` field of the response body (`\"RATE_LIMITED\"`). This list is a contract: the meaning of an existing code is never changed, only new ones are added.
  *
  * Values: VALIDATION_FAILED,MISSING_CREDENTIALS,INVALID_KEY,FORBIDDEN,BANNED,NOT_FOUND,GONE,CONFLICT,RATE_LIMITED,UNSUPPORTED_MEDIA,INVALID_CURSOR,INTERNAL
  */

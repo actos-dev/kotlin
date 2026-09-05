@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /tags/search` yanıtındaki tek eşleşme.  `post_count` **yok**: otomatik tamamlama sorgusu her tuş vuruşunda etiket başına post saymıyor (bkz. `actos_core::tag::TagMatch`), ve hesaplanmamış bir sayıyı `0` olarak göndermek yanlış bir değeri doğruymuş gibi taşımak olurdu.
+ * A single match in the `GET /tags/search` response.  There is **no** `post_count`: the autocomplete query does not count posts per tag on every keystroke, and sending an uncomputed number as `0` would carry a wrong value as if it were right.
  *
  * @param name 
  */

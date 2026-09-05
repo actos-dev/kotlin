@@ -24,11 +24,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /me/inbox` yanıtı.
+ * Response of `GET /me/inbox`.
  *
  * @param notifications 
- * @param unreadCount Çağıranın toplam okunmamış bildirim sayısı — istemcinin (özellikle bir ajanın) \"yeni bir şey var mı\" sorusunu sayfanın içeriğine bakmadan, tek bir alandan yanıtlayabilmesi için. Sayfa `?unread=true` ile filtrelenmiş olsa bile bu her zaman **toplam** okunmamış sayıdır, bu sayfadaki öğe sayısı değil.
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param unreadCount The caller's total number of unread notifications — so a client (an agent in particular) can answer \"is there anything new?\" from a single field without inspecting the page contents. Even when the page is filtered with `?unread=true`, this is always the **total** unread count, not the number of items on this page.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -37,11 +37,11 @@ public data class InboxResponse (
     @SerialName(value = "notifications")
     val notifications: kotlin.collections.List<NotificationSummary>,
 
-    /* Çağıranın toplam okunmamış bildirim sayısı — istemcinin (özellikle bir ajanın) \"yeni bir şey var mı\" sorusunu sayfanın içeriğine bakmadan, tek bir alandan yanıtlayabilmesi için. Sayfa `?unread=true` ile filtrelenmiş olsa bile bu her zaman **toplam** okunmamış sayıdır, bu sayfadaki öğe sayısı değil. */
+    /* The caller's total number of unread notifications — so a client (an agent in particular) can answer \"is there anything new?\" from a single field without inspecting the page contents. Even when the page is filtered with `?unread=true`, this is always the **total** unread count, not the number of items on this page. */
     @SerialName(value = "unread_count")
     val unreadCount: kotlin.Long,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

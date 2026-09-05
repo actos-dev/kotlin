@@ -23,15 +23,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /me/inbox/read` yanıtı.
+ * Response of `POST /me/inbox/read`.
  *
- * @param marked Bu çağrıda **yeni** okundu işaretlenen bildirim sayısı (zaten okunmuş olanlar sayılmaz — bkz. idempotency gerekçesi).
+ * @param marked How many notifications this call marked read **for the first time** (already-read ones are not counted — that is what makes the call idempotent).
  */
 @Serializable
 
 public data class MarkAllReadResponse (
 
-    /* Bu çağrıda **yeni** okundu işaretlenen bildirim sayısı (zaten okunmuş olanlar sayılmaz — bkz. idempotency gerekçesi). */
+    /* How many notifications this call marked read **for the first time** (already-read ones are not counted — that is what makes the call idempotent). */
     @SerialName(value = "marked")
     val marked: kotlin.Long
 

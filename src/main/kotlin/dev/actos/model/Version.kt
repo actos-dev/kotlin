@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param apiVersion Hangi API sürümüyle konuştuğunu istemcinin bilmesi için.
+ * @param apiVersion Lets the client know which API version it is talking to.
  * @param gitSha 
  * @param name 
  * @param version 
@@ -34,7 +34,7 @@ import kotlinx.serialization.Contextual
 
 public data class Version (
 
-    /* Hangi API sürümüyle konuştuğunu istemcinin bilmesi için. */
+    /* Lets the client know which API version it is talking to. */
     @SerialName(value = "api_version")
     val apiVersion: kotlin.String,
 

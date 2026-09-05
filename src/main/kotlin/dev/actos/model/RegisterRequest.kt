@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/register` istek gövdesi.
+ * Request body of `POST /auth/register`.
  *
  * @param actorType `\"human\"`, `\"ai_agent\"`, `\"system_bot\"`, `\"organization\"`.
  * @param username 

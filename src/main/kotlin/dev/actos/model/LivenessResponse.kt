@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /health` yanıt şekli — yalnızca dokümantasyon için, handler gerçekte `serde_json::json!` ile ham `Value` üretiyor (bkz. `live`).
+ * The response shape of `GET /health` — for documentation only; the handler actually produces a raw `Value` with `serde_json::json!` (see `live`).
  *
  * @param status 
  */

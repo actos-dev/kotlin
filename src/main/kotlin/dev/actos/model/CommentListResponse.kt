@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /actors/{username}/comments` yanıtı (Faz 7'den devir).
+ * Response of `GET /actors/{username}/comments`.
  *
  * @param comments 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class CommentListResponse (
     @SerialName(value = "comments")
     val comments: kotlin.collections.List<ContentSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

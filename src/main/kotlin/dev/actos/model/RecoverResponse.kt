@@ -23,16 +23,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/recover` yanıt gövdesi.
+ * Response body of `POST /auth/recover`.
  *
- * @param apiKey Kurtarma sonucu üretilen yeni ham key, **bir kez** gösterilir.
+ * @param apiKey The new raw key produced by the recovery, shown **once**.
  * @param remainingRecoveryCodes 
  */
 @Serializable
 
 public data class RecoverResponse (
 
-    /* Kurtarma sonucu üretilen yeni ham key, **bir kez** gösterilir. */
+    /* The new raw key produced by the recovery, shown **once**. */
     @SerialName(value = "api_key")
     val apiKey: kotlin.String,
 

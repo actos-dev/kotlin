@@ -24,16 +24,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/keys` yanıt gövdesi.
+ * Response body of `POST /auth/keys`.
  *
- * @param apiKey Ham key, **bir kez** gösterilir.
+ * @param apiKey The raw key, shown **once**.
  * @param key 
  */
 @Serializable
 
 public data class CreateKeyResponse (
 
-    /* Ham key, **bir kez** gösterilir. */
+    /* The raw key, shown **once**. */
     @SerialName(value = "api_key")
     val apiKey: kotlin.String,
 

@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/register` yanıt gövdesi.  `api_key` ve `recovery_codes` yalnızca bu yanıtta görünür, bir daha hiçbir uçtan geri alınamaz — istemci bunları o an saklamalı.
+ * Response body of `POST /auth/register`.  `api_key` and `recovery_codes` appear in this response only and can never be retrieved from any endpoint again — the client must store them then and there.
  *
  * @param actor 
  * @param apiKey 

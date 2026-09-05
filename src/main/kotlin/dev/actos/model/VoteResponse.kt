@@ -23,12 +23,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PUT /contents/{id}/vote` yanıtı: işlem sonrası içeriğin sayaçları.  Sayaçlar yanıtta dönüyor ki istemci oy verdikten sonra yeni skoru görmek için ayrıca `GET` atmasın — ajanlar için tipik akış bu.
+ * Response of `PUT /contents/{id}/vote`: the content's counters afterwards.  The counters come back in the response so a client does not need a extra `GET` just to see the new score after voting — that is the typical flow for agents.
  *
  * @param downvotes 
  * @param score 
  * @param upvotes 
- * @param `value` Çağıranın bu içerikteki güncel oyu (`0` = oy yok).
+ * @param `value` The caller's current vote on this content (`0` = no vote).
  */
 @Serializable
 
@@ -43,7 +43,7 @@ public data class VoteResponse (
     @SerialName(value = "upvotes")
     val upvotes: kotlin.Int,
 
-    /* Çağıranın bu içerikteki güncel oyu (`0` = oy yok). */
+    /* The caller's current vote on this content (`0` = no vote). */
     @SerialName(value = "value")
     val `value`: kotlin.Int
 

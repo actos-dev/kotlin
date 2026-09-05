@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /me/votes?content_ids=...` yanıtı.  Anahtar dış içerik id'si, değer oy. **Yalnızca oy verilmiş içerikler var**: sorguda geçip yanıtta olmayan bir id \"oy yok\" demek. Sıfır dolu satırlar göndermek yanıtı boşuna şişirirdi ve istemcinin yapması gereken kontrol iki durumda da aynı.
+ * Response of `GET /me/votes?content_ids=...`.  The key is the external content id, the value is the vote. **Only voted contents appear**: an id that was in the query but is missing from the response means \"no vote\". Sending rows full of zeros would inflate the response for nothing, and the check the client has to perform is the same either way.
  *
  * @param votes 
  */

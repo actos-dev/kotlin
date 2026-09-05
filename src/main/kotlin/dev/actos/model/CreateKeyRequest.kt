@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/keys` istek gövdesi.
+ * Request body of `POST /auth/keys`.
  *
  * @param label 
  */

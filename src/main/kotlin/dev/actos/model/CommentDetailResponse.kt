@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /comments/{id}` yanıtı: yorum + kökten kendisine kadar ata zinciri.  `ancestors` kökten başlar (ilk öğe her zaman post'tur) ve yorumun kendisini **içermez** — bir breadcrumb'ın doğal sırası bu.
+ * Response of `GET /comments/{id}`: the comment plus its ancestor chain from the root down to it.  `ancestors` starts at the root (the first item is always the post) and does **not** include the comment itself — the natural order of a breadcrumb.
  *
  * @param ancestors 
  * @param comment 

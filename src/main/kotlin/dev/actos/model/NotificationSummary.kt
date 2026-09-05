@@ -24,16 +24,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Tek bir bildirim satırının dışa dönük özeti.
+ * The outward-facing summary of a single notification row.
  *
  * @param createdAt RFC 3339.
  * @param id 
- * @param kind `\"comment_on_post\"`, `\"reply_to_comment\"`, `\"new_follower\"` ya da `\"moderation_action\"` (bkz. `actos_core::notification::NotificationKind`).
+ * @param kind One of `\"comment_on_post\"`, `\"reply_to_comment\"`, `\"new_follower\"` or `\"moderation_action\"`.
  * @param payload 
- * @param targetId `target_type`'a göre kodlanmış dış id (`c_...` ya da `a_...`).  **Hedef sonradan silinmiş olabilir** (soft-delete): bu satır yine de döner, `target_id` yine de geçerli bir kodlanmış id'dir — istemci bu id'yle hedefi çekmeye çalışırsa oradan `410 Gone` alır, bildirimin kendisi silinmez/gizlenmez (bkz. `migrations/0021_notifications.up.sql` tablo yorumu).
- * @param targetType `\"content\"` ya da `\"actor\"` — `target_id`'nin hangi id uzayına ait olduğunu belirler.
- * @param actor Bildirimi tetikleyen actor. `None` yalnızca sistem kaynaklı olaylarda (bugün üreten bir yol yok, bkz. `actos_core::notification` modül dokümantasyonu).
- * @param readAt RFC 3339. `None` ise henüz okunmadı.
+ * @param targetId The encoded external id, in the space given by `target_type` (`c_...` or `a_...`).  **The target may have been deleted since** (soft delete): the row is still returned and `target_id` is still a valid encoded id — a client that tries to fetch the target with it will get `410 Gone` from there. The notification itself is neither removed nor hidden.
+ * @param targetType `\"content\"` or `\"actor\"` — determines which id space `target_id` belongs to.
+ * @param actor The actor that triggered the notification. `None` only for system-originated events (no path produces one today).
+ * @param readAt RFC 3339. `None` means it has not been read yet.
  */
 @Serializable
 
@@ -46,26 +46,26 @@ public data class NotificationSummary (
     @SerialName(value = "id")
     val id: kotlin.String,
 
-    /* `\"comment_on_post\"`, `\"reply_to_comment\"`, `\"new_follower\"` ya da `\"moderation_action\"` (bkz. `actos_core::notification::NotificationKind`). */
+    /* One of `\"comment_on_post\"`, `\"reply_to_comment\"`, `\"new_follower\"` or `\"moderation_action\"`. */
     @SerialName(value = "kind")
     val kind: kotlin.String,
 
     @Contextual @SerialName(value = "payload")
     val payload: kotlin.Any?,
 
-    /* `target_type`'a göre kodlanmış dış id (`c_...` ya da `a_...`).  **Hedef sonradan silinmiş olabilir** (soft-delete): bu satır yine de döner, `target_id` yine de geçerli bir kodlanmış id'dir — istemci bu id'yle hedefi çekmeye çalışırsa oradan `410 Gone` alır, bildirimin kendisi silinmez/gizlenmez (bkz. `migrations/0021_notifications.up.sql` tablo yorumu). */
+    /* The encoded external id, in the space given by `target_type` (`c_...` or `a_...`).  **The target may have been deleted since** (soft delete): the row is still returned and `target_id` is still a valid encoded id — a client that tries to fetch the target with it will get `410 Gone` from there. The notification itself is neither removed nor hidden. */
     @SerialName(value = "target_id")
     val targetId: kotlin.String,
 
-    /* `\"content\"` ya da `\"actor\"` — `target_id`'nin hangi id uzayına ait olduğunu belirler. */
+    /* `\"content\"` or `\"actor\"` — determines which id space `target_id` belongs to. */
     @SerialName(value = "target_type")
     val targetType: kotlin.String,
 
-    /* Bildirimi tetikleyen actor. `None` yalnızca sistem kaynaklı olaylarda (bugün üreten bir yol yok, bkz. `actos_core::notification` modül dokümantasyonu). */
+    /* The actor that triggered the notification. `None` only for system-originated events (no path produces one today). */
     @SerialName(value = "actor")
     val actor: ActorSummary? = null,
 
-    /* RFC 3339. `None` ise henüz okunmadı. */
+    /* RFC 3339. `None` means it has not been read yet. */
     @SerialName(value = "read_at")
     val readAt: kotlin.String? = null
 

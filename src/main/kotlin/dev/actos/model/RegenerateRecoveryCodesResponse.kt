@@ -23,15 +23,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /auth/recovery-codes/regenerate` yanıt gövdesi.
+ * Response body of `POST /auth/recovery-codes/regenerate`.
  *
- * @param recoveryCodes Yeni 10 kurtarma kodu, **bir kez** gösterilir; eskileri artık geçersiz.
+ * @param recoveryCodes Ten new recovery codes, shown **once**; the old ones are now void.
  */
 @Serializable
 
 public data class RegenerateRecoveryCodesResponse (
 
-    /* Yeni 10 kurtarma kodu, **bir kez** gösterilir; eskileri artık geçersiz. */
+    /* Ten new recovery codes, shown **once**; the old ones are now void. */
     @SerialName(value = "recovery_codes")
     val recoveryCodes: kotlin.collections.List<kotlin.String>
 

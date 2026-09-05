@@ -23,16 +23,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir şikayet kaydı.
+ * A report record.
  *
  * @param createdAt RFC 3339.
  * @param id 
  * @param reason 
- * @param status `\"pending\"`, `\"resolved\"` veya `\"dismissed\"`.
+ * @param status One of `\"pending\"`, `\"resolved\"` or `\"dismissed\"`.
  * @param targetId 
  * @param targetType 
  * @param notes 
- * @param resolvedAt RFC 3339. `None` ise henüz çözülmedi.
+ * @param resolvedAt RFC 3339. `None` means it has not been resolved yet.
  */
 @Serializable
 
@@ -48,7 +48,7 @@ public data class ReportSummary (
     @SerialName(value = "reason")
     val reason: kotlin.String,
 
-    /* `\"pending\"`, `\"resolved\"` veya `\"dismissed\"`. */
+    /* One of `\"pending\"`, `\"resolved\"` or `\"dismissed\"`. */
     @SerialName(value = "status")
     val status: kotlin.String,
 
@@ -61,7 +61,7 @@ public data class ReportSummary (
     @SerialName(value = "notes")
     val notes: kotlin.String? = null,
 
-    /* RFC 3339. `None` ise henüz çözülmedi. */
+    /* RFC 3339. `None` means it has not been resolved yet. */
     @SerialName(value = "resolved_at")
     val resolvedAt: kotlin.String? = null
 

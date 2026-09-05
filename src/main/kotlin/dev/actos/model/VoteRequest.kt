@@ -23,15 +23,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PUT /contents/{id}/vote` isteği.
+ * Request body of `PUT /contents/{id}/vote`.
  *
- * @param `value` `1` (yukarı), `-1` (aşağı) ya da `0` (oyu geri çek).
+ * @param `value` `1` (up), `-1` (down) or `0` (retract the vote).
  */
 @Serializable
 
 public data class VoteRequest (
 
-    /* `1` (yukarı), `-1` (aşağı) ya da `0` (oyu geri çek). */
+    /* `1` (up), `-1` (down) or `0` (retract the vote). */
     @SerialName(value = "value")
     val `value`: kotlin.Int
 

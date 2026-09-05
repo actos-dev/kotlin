@@ -23,10 +23,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /admin/roles` isteği.
+ * Request body of `POST /admin/roles`.
  *
  * @param username 
- * @param role `\"admin\"`, `\"moderator\"` ya da `null` (rolü kaldır).
+ * @param role One of `\"admin\"`, `\"moderator\"`, or `null` to remove the role.
  */
 @Serializable
 
@@ -35,7 +35,7 @@ public data class SetRoleRequest (
     @SerialName(value = "username")
     val username: kotlin.String,
 
-    /* `\"admin\"`, `\"moderator\"` ya da `null` (rolü kaldır). */
+    /* One of `\"admin\"`, `\"moderator\"`, or `null` to remove the role. */
     @SerialName(value = "role")
     val role: kotlin.String? = null
 

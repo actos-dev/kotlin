@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /actors/{username}/posts` yanıt gövdesi.  `actos_types::actor::ActorListResponse` ile aynı sarmalayıcı şekli (öğe listesi + varsa sonraki sayfanın cursor'ı) — burada alan adı `posts` (`actors` değil), çünkü uç özellikle post'lara özgü.  **`?fields=` ile alan seçimi bu sarmalayıcıya değil, `posts` içindeki her öğeye uygulanır** (bkz. `actos-api/src/fields.rs` modül dokümantasyonu) — yani HTTP katmanı bu tipi hiç kullanmadan, filtrelenmiş öğelerle aynı şekle (`{\"posts\": [...], \"next_cursor\": ...}`) sahip ham bir `serde_json::Value` üretebilir. Tip yine de burada tanımlı: SDK'lar filtresiz (tam) yanıtı bu struct'a deserialize edebilsin diye.
+ * Response body of `GET /actors/{username}/posts`.  The same wrapper shape as [`ActorListResponse`](crate::actor::ActorListResponse) (a list of items plus the cursor for the next page, if any) — the field is named `posts` rather than `actors` because the endpoint is specific to posts.  **Field selection with `?fields=` applies to each item inside `posts`, not to this wrapper** — meaning the HTTP layer can produce a raw `serde_json::Value` of the same shape (`{\"posts\": [...], \"next_cursor\": ...}`) from filtered items without using this type at all. The type is still defined here so that SDKs can deserialize the unfiltered (complete) response into this struct.
  *
  * @param posts 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class PostListResponse (
     @SerialName(value = "posts")
     val posts: kotlin.collections.List<ContentSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

@@ -23,10 +23,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir API key'in dışa dönük özeti. Secret'in kendisi ya da hash'i **asla** bu tipte yer almaz.
+ * The outward-facing summary of an API key. Neither the secret itself nor its hash **ever** appears in this type.
  *
  * @param createdAt RFC 3339.
- * @param id Ham UUID string'i (`api_keys.id`) — base62 kodlanmış değil. Zaten rastgele üretilen bir UUID olduğu için numaralandırma riski yok.
+ * @param id The raw UUID string — not base62-encoded. It is a randomly generated UUID already, so there is no enumeration risk.
  * @param label 
  * @param lastUsedAt RFC 3339.
  * @param revokedAt RFC 3339.
@@ -39,7 +39,7 @@ public data class ApiKeySummary (
     @SerialName(value = "created_at")
     val createdAt: kotlin.String,
 
-    /* Ham UUID string'i (`api_keys.id`) — base62 kodlanmış değil. Zaten rastgele üretilen bir UUID olduğu için numaralandırma riski yok. */
+    /* The raw UUID string — not base62-encoded. It is a randomly generated UUID already, so there is no enumeration risk. */
     @SerialName(value = "id")
     val id: kotlin.String,
 

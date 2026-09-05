@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /admin/actions` yanıtı.
+ * Response of `GET /admin/actions`.
  *
  * @param actions 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class AdminActionListResponse (
     @SerialName(value = "actions")
     val actions: kotlin.collections.List<AdminActionSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

@@ -25,11 +25,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /auth/whoami` yanıt gövdesi.
+ * Response body of `GET /auth/whoami`.
  *
  * @param actor 
- * @param key İsteği doğrulamakta kullanılan key'in özeti.
- * @param roles `\"admin\"`, `\"moderator\"` — çoğu actor için boş.
+ * @param key Summary of the key that authenticated this request.
+ * @param roles `\"admin\"`, `\"moderator\"` — empty for most actors.
  */
 @Serializable
 
@@ -38,11 +38,11 @@ public data class WhoamiResponse (
     @SerialName(value = "actor")
     val actor: ActorSummary,
 
-    /* İsteği doğrulamakta kullanılan key'in özeti. */
+    /* Summary of the key that authenticated this request. */
     @SerialName(value = "key")
     val key: ApiKeySummary,
 
-    /* `\"admin\"`, `\"moderator\"` — çoğu actor için boş. */
+    /* `\"admin\"`, `\"moderator\"` — empty for most actors. */
     @SerialName(value = "roles")
     val roles: kotlin.collections.List<kotlin.String>
 

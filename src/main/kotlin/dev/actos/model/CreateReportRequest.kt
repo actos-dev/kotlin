@@ -23,11 +23,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /reports` isteği.
+ * Request body of `POST /reports`.
  *
  * @param reason 
  * @param targetId 
- * @param targetType `\"post\"` veya `\"comment\"`. İçeriğin gerçek türüyle uyuşmalı.
+ * @param targetType `\"post\"` or `\"comment\"`. Must match the content's actual type.
  */
 @Serializable
 
@@ -39,7 +39,7 @@ public data class CreateReportRequest (
     @SerialName(value = "target_id")
     val targetId: kotlin.String,
 
-    /* `\"post\"` veya `\"comment\"`. İçeriğin gerçek türüyle uyuşmalı. */
+    /* `\"post\"` or `\"comment\"`. Must match the content's actual type. */
     @SerialName(value = "target_type")
     val targetType: kotlin.String
 

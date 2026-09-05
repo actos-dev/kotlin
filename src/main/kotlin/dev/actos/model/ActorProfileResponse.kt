@@ -25,7 +25,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /actors/{username}` yanıt gövdesi.
+ * Response body of `GET /actors/{username}`.
  *
  * @param actor 
  * @param stats 

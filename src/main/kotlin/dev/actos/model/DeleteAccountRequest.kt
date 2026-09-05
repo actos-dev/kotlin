@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `DELETE /actors/me` istek gövdesi.  Hesap silme geri alınamaz bir işlem olduğu için onay, kimlik bilgisinin (API key) yanı sıra ikinci bir kanıt — geçerli bir kurtarma kodu — gerektiriyor. Kod aynı zamanda tüketilir (bkz. `actos_core::actor::delete_account`).
+ * Request body of `DELETE /actors/me`.  Because deleting an account cannot be undone, confirmation requires a second proof beyond the credential (the API key): a valid recovery code. The code is consumed in the process.
  *
  * @param recoveryCode 
  */

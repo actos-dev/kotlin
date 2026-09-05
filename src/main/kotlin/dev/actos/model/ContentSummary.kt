@@ -25,26 +25,26 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir içeriğin (post ya da yorum) dışa dönük özeti.
+ * The outward-facing summary of a content (post or comment).
  *
  * @param author 
- * @param authorDeleted `true` ise `author` maskelenmiş demektir (bkz. modül dokümantasyonu \"Silinmiş yazar maskelemesi\").
- * @param body `deleted == true` iken maskelenmiş bir yer tutucudur, gerçek gövde değildir (bkz. modül dokümantasyonu).
- * @param bodyFormat `\"markdown\"` veya `\"plain\"`.
+ * @param authorDeleted When `true`, `author` has been masked (see the module documentation, \"Masking a deleted author\").
+ * @param body When `deleted == true` this is a masked placeholder, not the real body (see the module documentation).
+ * @param bodyFormat `\"markdown\"` or `\"plain\"`.
  * @param commentCount 
- * @param contentType `\"post\"` veya `\"comment\"`. `actos_core::content::ContentType` bilerek `String` (bkz. modül başındaki `actos-core` bağımsızlığı kuralı — `ActorSummary.actor_type` ile aynı desen).
+ * @param contentType `\"post\"` or `\"comment\"`. Deliberately a `String` rather than the server's enum (see the independence rule at the top of the module — the same pattern as `actor_type` on `ActorSummary`).
  * @param createdAt RFC 3339.
- * @param deleted `true` ise bu içerik soft-delete edilmiş; `title`/`body` gerçek değerleri taşımaz (bkz. modül dokümantasyonu).
+ * @param deleted When `true` this content is soft-deleted; `title`/`body` do not carry the real values (see the module documentation).
  * @param downvotes 
- * @param id `actos_core::id::IdCodec`'le kodlanmış dış id (`c_7fGh2Kd`) — ham `bigint` asla buraya sızmaz.
+ * @param id The encoded external id (`c_7fGh2Kd`) — the raw `bigint` never leaks into it.
  * @param metadata 
  * @param score 
  * @param tags 
  * @param upvotes 
- * @param attachments Bu içeriğe bağlı yüklemeler.  **`None` ile `Some(vec![])` farklı şeyler:** `None` \"bu görünümde ekler yüklenmedi\" demek (liste uçları ekleri getirmiyor — sayfa başına ayrı bir sorgu maliyeti taşımamak için), `Some([])` ise \"bu içeriğin eki yok\". İkisini aynı değere çökertmek, bir liste öğesinin eksiz olduğunu iddia etmek olurdu.  Tekil uçlar (`GET /posts/{id}`, `GET /comments/{id}`) ve oluşturma yanıtları her zaman dolduruyor.
- * @param bodyHtml `body`'nin sanitize edilmiş HTML'i (Faz 18.A, bkz. NOTES.md §8.3).  **Veritabanında SAKLANMIYOR, her okumada HTTP katmanında hesaplanır** (`crate-actos-api::routes::posts::render_body_html`) — gövde düzenlenip de HTML'in eski kalması sınıfı bir tutarsızlığı kökten imkânsız kılmak için. Hesaplama `actos_core::text::render_markdown` (`pulldown-cmark` + `ammonia`) üzerinden ucuz, saklamanın getirdiği \"iki kaynaktan tek gerçek\" riskine değmiyor.  **`body_format == \"plain\"` iken markdown render EDİLMEZ** — yalnızca HTML-escape edilip tek bir `<p>` ile sarılır. Aksi halde kullanıcının düz metin niyetiyle yazdığı `*yıldız*` gibi bir gövde markdown sözdizimi sanılıp italik render edilirdi.  `deleted == true` iken `body` gibi maskelenir: bu alan `body`'nin (zaten maskelenmiş) değerinden türetildiği için ayrı bir maskeleme dalına gerek yok, otomatik tutarlı.  **`None` iki farklı sebepten olabilir, ikisi de \"hesaplanmadı\" demek:** (1) bu bir liste öğesi ve `?fields=body_html` açıkça istenmedi (liste uçlarında gövde boyutu 25 katına çıkmasın diye varsayılan olarak hesaplanmıyor), ya da (2) alan hiç `?fields=`'le filtrelenmedi ama çağıran uç zaten hesaplamıyor. Tekil uçlar (`GET /posts/{id}`, `GET /comments/{id}`) `?fields=`'ten bağımsız her zaman doldurur. `attachments`'ın aksine `#[serde(skip_serializing_if)]` YOK — `edited_at` ile aynı desen: alan her zaman anahtar olarak orada, `null` olabilir; bu da `?fields=body_html` filtresinin (bkz. `actos-api::fields:: apply_fields`) hesaplanmamış bir öğede de \"bilinmeyen alan\" `400`'ü yerine `null` dönmesini sağlıyor.
- * @param editedAt RFC 3339. `None` ise hiç düzenlenmedi.
- * @param title Yalnızca `content_type == \"post\"` iken dolu; yorumlarda her zaman `None`.
+ * @param attachments The uploads attached to this content.  **`None` and `Some(vec![])` mean different things:** `None` means \"attachments were not loaded for this view\" (list endpoints do not fetch them, to avoid an extra query per page), while `Some([])` means \"this content has no attachments\". Collapsing the two into one value would amount to claiming that a list item has no attachments.  The single-item endpoints (`GET /posts/{id}`, `GET /comments/{id}`) and the creation responses always populate it.
+ * @param bodyHtml The sanitized HTML rendering of `body`.  **It is NOT stored in the database; it is computed in the HTTP layer on every read** — so that the whole class of inconsistency where the body is edited and the HTML goes stale is impossible by construction. The rendering (`pulldown-cmark` + `ammonia`) is cheap and not worth the \"one truth from two sources\" risk that storing it would bring.  **Markdown is NOT rendered when `body_format == \"plain\"`** — the text is only HTML-escaped and wrapped in a single `<p>`. Otherwise a body the user wrote as plain text, say `*star*`, would be mistaken for markdown syntax and rendered in italics.  When `deleted == true` it is masked just like `body`: this field is derived from the (already masked) value of `body`, so it needs no masking branch of its own and stays consistent automatically.  **`None` can mean two different things, both of them \"not computed\":** (1) this is a list item and `body_html` was not explicitly requested via `?fields=` — list endpoints skip it by default so the response body does not grow by a factor of 25 — or (2) no `?fields=` filter was used at all and the calling endpoint does not compute it. The single-item endpoints (`GET /posts/{id}`, `GET /comments/{id}`) always populate it, regardless of `?fields=`. Unlike `attachments` there is NO `#[serde(skip_serializing_if)]` here — the same pattern as `edited_at`: the key is always present and may be `null`, which lets a `?fields=body_html` filter return `null` on an item where it was not computed, instead of a `400` for an \"unknown field\".
+ * @param editedAt RFC 3339. `None` means it was never edited.
+ * @param title Populated only when `content_type == \"post\"`; always `None` on comments.
  */
 @Serializable
 
@@ -53,22 +53,22 @@ public data class ContentSummary (
     @SerialName(value = "author")
     val author: ActorSummary,
 
-    /* `true` ise `author` maskelenmiş demektir (bkz. modül dokümantasyonu \"Silinmiş yazar maskelemesi\"). */
+    /* When `true`, `author` has been masked (see the module documentation, \"Masking a deleted author\"). */
     @SerialName(value = "author_deleted")
     val authorDeleted: kotlin.Boolean,
 
-    /* `deleted == true` iken maskelenmiş bir yer tutucudur, gerçek gövde değildir (bkz. modül dokümantasyonu). */
+    /* When `deleted == true` this is a masked placeholder, not the real body (see the module documentation). */
     @SerialName(value = "body")
     val body: kotlin.String,
 
-    /* `\"markdown\"` veya `\"plain\"`. */
+    /* `\"markdown\"` or `\"plain\"`. */
     @SerialName(value = "body_format")
     val bodyFormat: kotlin.String,
 
     @SerialName(value = "comment_count")
     val commentCount: kotlin.Int,
 
-    /* `\"post\"` veya `\"comment\"`. `actos_core::content::ContentType` bilerek `String` (bkz. modül başındaki `actos-core` bağımsızlığı kuralı — `ActorSummary.actor_type` ile aynı desen). */
+    /* `\"post\"` or `\"comment\"`. Deliberately a `String` rather than the server's enum (see the independence rule at the top of the module — the same pattern as `actor_type` on `ActorSummary`). */
     @SerialName(value = "content_type")
     val contentType: kotlin.String,
 
@@ -76,14 +76,14 @@ public data class ContentSummary (
     @SerialName(value = "created_at")
     val createdAt: kotlin.String,
 
-    /* `true` ise bu içerik soft-delete edilmiş; `title`/`body` gerçek değerleri taşımaz (bkz. modül dokümantasyonu). */
+    /* When `true` this content is soft-deleted; `title`/`body` do not carry the real values (see the module documentation). */
     @SerialName(value = "deleted")
     val deleted: kotlin.Boolean,
 
     @SerialName(value = "downvotes")
     val downvotes: kotlin.Int,
 
-    /* `actos_core::id::IdCodec`'le kodlanmış dış id (`c_7fGh2Kd`) — ham `bigint` asla buraya sızmaz. */
+    /* The encoded external id (`c_7fGh2Kd`) — the raw `bigint` never leaks into it. */
     @SerialName(value = "id")
     val id: kotlin.String,
 
@@ -99,19 +99,19 @@ public data class ContentSummary (
     @SerialName(value = "upvotes")
     val upvotes: kotlin.Int,
 
-    /* Bu içeriğe bağlı yüklemeler.  **`None` ile `Some(vec![])` farklı şeyler:** `None` \"bu görünümde ekler yüklenmedi\" demek (liste uçları ekleri getirmiyor — sayfa başına ayrı bir sorgu maliyeti taşımamak için), `Some([])` ise \"bu içeriğin eki yok\". İkisini aynı değere çökertmek, bir liste öğesinin eksiz olduğunu iddia etmek olurdu.  Tekil uçlar (`GET /posts/{id}`, `GET /comments/{id}`) ve oluşturma yanıtları her zaman dolduruyor. */
+    /* The uploads attached to this content.  **`None` and `Some(vec![])` mean different things:** `None` means \"attachments were not loaded for this view\" (list endpoints do not fetch them, to avoid an extra query per page), while `Some([])` means \"this content has no attachments\". Collapsing the two into one value would amount to claiming that a list item has no attachments.  The single-item endpoints (`GET /posts/{id}`, `GET /comments/{id}`) and the creation responses always populate it. */
     @SerialName(value = "attachments")
     val attachments: kotlin.collections.List<UploadResponse>? = null,
 
-    /* `body`'nin sanitize edilmiş HTML'i (Faz 18.A, bkz. NOTES.md §8.3).  **Veritabanında SAKLANMIYOR, her okumada HTTP katmanında hesaplanır** (`crate-actos-api::routes::posts::render_body_html`) — gövde düzenlenip de HTML'in eski kalması sınıfı bir tutarsızlığı kökten imkânsız kılmak için. Hesaplama `actos_core::text::render_markdown` (`pulldown-cmark` + `ammonia`) üzerinden ucuz, saklamanın getirdiği \"iki kaynaktan tek gerçek\" riskine değmiyor.  **`body_format == \"plain\"` iken markdown render EDİLMEZ** — yalnızca HTML-escape edilip tek bir `<p>` ile sarılır. Aksi halde kullanıcının düz metin niyetiyle yazdığı `*yıldız*` gibi bir gövde markdown sözdizimi sanılıp italik render edilirdi.  `deleted == true` iken `body` gibi maskelenir: bu alan `body`'nin (zaten maskelenmiş) değerinden türetildiği için ayrı bir maskeleme dalına gerek yok, otomatik tutarlı.  **`None` iki farklı sebepten olabilir, ikisi de \"hesaplanmadı\" demek:** (1) bu bir liste öğesi ve `?fields=body_html` açıkça istenmedi (liste uçlarında gövde boyutu 25 katına çıkmasın diye varsayılan olarak hesaplanmıyor), ya da (2) alan hiç `?fields=`'le filtrelenmedi ama çağıran uç zaten hesaplamıyor. Tekil uçlar (`GET /posts/{id}`, `GET /comments/{id}`) `?fields=`'ten bağımsız her zaman doldurur. `attachments`'ın aksine `#[serde(skip_serializing_if)]` YOK — `edited_at` ile aynı desen: alan her zaman anahtar olarak orada, `null` olabilir; bu da `?fields=body_html` filtresinin (bkz. `actos-api::fields:: apply_fields`) hesaplanmamış bir öğede de \"bilinmeyen alan\" `400`'ü yerine `null` dönmesini sağlıyor. */
+    /* The sanitized HTML rendering of `body`.  **It is NOT stored in the database; it is computed in the HTTP layer on every read** — so that the whole class of inconsistency where the body is edited and the HTML goes stale is impossible by construction. The rendering (`pulldown-cmark` + `ammonia`) is cheap and not worth the \"one truth from two sources\" risk that storing it would bring.  **Markdown is NOT rendered when `body_format == \"plain\"`** — the text is only HTML-escaped and wrapped in a single `<p>`. Otherwise a body the user wrote as plain text, say `*star*`, would be mistaken for markdown syntax and rendered in italics.  When `deleted == true` it is masked just like `body`: this field is derived from the (already masked) value of `body`, so it needs no masking branch of its own and stays consistent automatically.  **`None` can mean two different things, both of them \"not computed\":** (1) this is a list item and `body_html` was not explicitly requested via `?fields=` — list endpoints skip it by default so the response body does not grow by a factor of 25 — or (2) no `?fields=` filter was used at all and the calling endpoint does not compute it. The single-item endpoints (`GET /posts/{id}`, `GET /comments/{id}`) always populate it, regardless of `?fields=`. Unlike `attachments` there is NO `#[serde(skip_serializing_if)]` here — the same pattern as `edited_at`: the key is always present and may be `null`, which lets a `?fields=body_html` filter return `null` on an item where it was not computed, instead of a `400` for an \"unknown field\". */
     @SerialName(value = "body_html")
     val bodyHtml: kotlin.String? = null,
 
-    /* RFC 3339. `None` ise hiç düzenlenmedi. */
+    /* RFC 3339. `None` means it was never edited. */
     @SerialName(value = "edited_at")
     val editedAt: kotlin.String? = null,
 
-    /* Yalnızca `content_type == \"post\"` iken dolu; yorumlarda her zaman `None`. */
+    /* Populated only when `content_type == \"post\"`; always `None` on comments. */
     @SerialName(value = "title")
     val title: kotlin.String? = null
 

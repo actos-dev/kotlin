@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PATCH /admin/reports/{id}` isteği.
+ * Request body of `PATCH /admin/reports/{id}`.
  *
  * @param status 
  * @param notes 

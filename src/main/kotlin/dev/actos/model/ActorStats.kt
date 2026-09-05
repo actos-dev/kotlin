@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /actors/{username}` yanıtındaki istatistik bloğu.  `contents` tablosundan (yalnızca canlı — `deleted_at IS NULL` — satırlar üzerinden) tek bir agrega sorguyla hesaplanır; actor başına ayrı bir sorgu atılmaz (bkz. `actos_core::actor::get_profile`).
+ * The statistics block in the `GET /actors/{username}` response.  Computed with a single aggregate query over the contents table (live rows only), not with one query per actor.
  *
  * @param commentCount 
  * @param postCount 

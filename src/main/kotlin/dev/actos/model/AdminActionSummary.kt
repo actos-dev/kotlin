@@ -23,10 +23,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir denetim izi kaydı.
+ * An audit trail record.
  *
  * @param actionType 
- * @param adminUsername Eylemi yapan admin'in kullanıcı adı — ham id yerine okunabilir olan.
+ * @param adminUsername Username of the admin who performed the action — readable, rather than a raw id.
  * @param createdAt RFC 3339.
  * @param id 
  * @param targetId 
@@ -40,7 +40,7 @@ public data class AdminActionSummary (
     @SerialName(value = "action_type")
     val actionType: kotlin.String,
 
-    /* Eylemi yapan admin'in kullanıcı adı — ham id yerine okunabilir olan. */
+    /* Username of the admin who performed the action — readable, rather than a raw id. */
     @SerialName(value = "admin_username")
     val adminUsername: kotlin.String,
 

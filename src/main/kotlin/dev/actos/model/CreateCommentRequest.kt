@@ -23,11 +23,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /posts/{id}/comments` isteği.
+ * Request body of `POST /posts/{id}/comments`.
  *
  * @param body 
- * @param attachmentIds `POST /uploads`'tan dönen ek id'leri. Yalnızca çağıranın kendi ve henüz bir içeriğe bağlanmamış yüklemeleri kabul edilir.
- * @param parentId Verilmezse yorum post'un doğrudan çocuğu olur; verilirse o yoruma yanıt olur. Dış id (`c_...`) biçiminde.
+ * @param attachmentIds Attachment ids returned by `POST /uploads`. Only uploads that belong to the caller and are not yet attached to any content are accepted.
+ * @param parentId When omitted the comment becomes a direct child of the post; when given it becomes a reply to that comment. In external id form (`c_...`).
  */
 @Serializable
 
@@ -36,11 +36,11 @@ public data class CreateCommentRequest (
     @SerialName(value = "body")
     val body: kotlin.String,
 
-    /* `POST /uploads`'tan dönen ek id'leri. Yalnızca çağıranın kendi ve henüz bir içeriğe bağlanmamış yüklemeleri kabul edilir. */
+    /* Attachment ids returned by `POST /uploads`. Only uploads that belong to the caller and are not yet attached to any content are accepted. */
     @SerialName(value = "attachment_ids")
     val attachmentIds: kotlin.collections.List<kotlin.String>? = null,
 
-    /* Verilmezse yorum post'un doğrudan çocuğu olur; verilirse o yoruma yanıt olur. Dış id (`c_...`) biçiminde. */
+    /* When omitted the comment becomes a direct child of the post; when given it becomes a reply to that comment. In external id form (`c_...`). */
     @SerialName(value = "parent_id")
     val parentId: kotlin.String? = null
 

@@ -23,12 +23,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir ban kaydı.
+ * A ban record.
  *
  * @param bannedAt RFC 3339.
  * @param reason 
  * @param username 
- * @param expiresAt RFC 3339. `None` ise kalıcı.
+ * @param expiresAt RFC 3339. `None` means permanent.
  */
 @Serializable
 
@@ -44,7 +44,7 @@ public data class BanSummary (
     @SerialName(value = "username")
     val username: kotlin.String,
 
-    /* RFC 3339. `None` ise kalıcı. */
+    /* RFC 3339. `None` means permanent. */
     @SerialName(value = "expires_at")
     val expiresAt: kotlin.String? = null
 

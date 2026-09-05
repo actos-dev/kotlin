@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /posts/{id}/comments` yanıtı.  `next_cursor` **yalnızca üst seviye yorumları** sayfalar; iç içe yanıtlar sayfalanmaz (bkz. `actos_core::comment::list_comment_tree`). Daha derin bir alt ağaç `?parent=<id>` ile ayrıca çekilir.
+ * Response of `GET /posts/{id}/comments`.  `next_cursor` paginates **top-level comments only**; nested replies are not paginated. A deeper subtree is fetched separately with `?parent=<id>`.
  *
  * @param comments 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class CommentThreadResponse (
     @SerialName(value = "comments")
     val comments: kotlin.collections.List<CommentNodeResponse>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

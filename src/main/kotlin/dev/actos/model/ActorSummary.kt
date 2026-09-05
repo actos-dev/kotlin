@@ -23,14 +23,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Bir actor'ün dışa dönük özeti.  `id` her zaman [`actos_core::id::IdCodec`]'le kodlanmış, base62 bir string'dir (`a_7fGh2Kd`) — ham `bigint` birincil anahtarı asla buraya sızmaz.
+ * The outward-facing summary of an actor.  `id` is always an encoded base62 string (`a_7fGh2Kd`) — the raw `bigint` primary key never leaks into it.
  *
  * @param actorType 
  * @param createdAt RFC 3339.
  * @param id 
- * @param trustLevel Güven kademesi (0-2) — bkz. `actos_core::actor::recompute_trust_levels` ve `migrations/0020_trust_levels.up.sql`. Hesap yaşı zaten `created_at`'ten türetilebildiği için ayrı bir \"yaş\" alanı yok; bu alan yalnızca sunucunun periyodik olarak hesapladığı kademeyi taşıyor.
+ * @param trustLevel Trust level (0-2), recomputed periodically by the server. There is no separate \"age\" field because account age is already derivable from `created_at`; this field carries only the computed level.
  * @param username 
- * @param avatarUrl Avatarın herkese açık URL'i — `actors.avatar_object_key` set değilse (hiç avatar seçilmemişse) `None`. Bucket public-read olduğu için (bkz. `crate::upload::UploadResponse.url`) imzalama gerekmiyor, URL doğrudan `<public_base_url>/<object_key>` biçiminde üretiliyor.  **Yalnızca actor'ün kendi profilini temsil eden dönüşümlerde (`GET /actors/{username}`, `PATCH /actors/me`, `GET /auth/whoami`, takipçi/takip/keşif/arama listeleri) dolu döner.** Bir içeriğin (post/yorum) yazarını özetleyen `ActorSummary`'lerde (bkz. `actos-api/src/routes/posts.rs`) her zaman `None`'dur — o yol `Content.author`'ın taşıdığı `ActorRecord` üzerinden geçiyor ve `ActorRecord` bilerek avatar taşımıyor (gerekçe: `actos_core::auth::AuthenticatedActor` ve `actos_core::actor::Profile` üzerindeki yorumlar — `ActorRecord`, `crate::comment`/ `crate::interaction`/`crate::feed`/`crate::search` gibi avatarı hiç bilmeyen birçok sorgu tarafından da paylaşılan, dar bir tip; avatarı oraya eklemek o modüllerin hepsinin güncellenmesini gerektirirdi). Silinmiş bir yazarın maskelenmiş özetinde de aynı sebeple ve ayrıca **kasıtlı olarak** hep `None` (bkz. `actos-api/src/routes/posts.rs::masked_actor_summary`).
+ * @param avatarUrl Public URL of the avatar — `None` when no avatar has been chosen. The bucket is public-read (see [`UploadResponse::url`](crate::upload::UploadResponse)), so no signing is needed and the URL is built directly as `<public_base_url>/<object_key>`.  **It is populated only where the `ActorSummary` represents the actor's own profile** — `GET /actors/{username}`, `PATCH /actors/me`, `GET /auth/whoami`, and the follower/following/discovery/search listings. In an `ActorSummary` that summarizes the *author* of a post or comment it is always `None`: that path goes through a narrower internal record shared by many queries that know nothing about avatars, and adding the avatar there would mean touching all of them. The masked summary of a deleted author is `None` for the same reason and, additionally, **on purpose**.
  * @param bio 
  * @param displayName 
  */
@@ -48,14 +48,14 @@ public data class ActorSummary (
     @SerialName(value = "id")
     val id: kotlin.String,
 
-    /* Güven kademesi (0-2) — bkz. `actos_core::actor::recompute_trust_levels` ve `migrations/0020_trust_levels.up.sql`. Hesap yaşı zaten `created_at`'ten türetilebildiği için ayrı bir \"yaş\" alanı yok; bu alan yalnızca sunucunun periyodik olarak hesapladığı kademeyi taşıyor. */
+    /* Trust level (0-2), recomputed periodically by the server. There is no separate \"age\" field because account age is already derivable from `created_at`; this field carries only the computed level. */
     @SerialName(value = "trust_level")
     val trustLevel: kotlin.Int,
 
     @SerialName(value = "username")
     val username: kotlin.String,
 
-    /* Avatarın herkese açık URL'i — `actors.avatar_object_key` set değilse (hiç avatar seçilmemişse) `None`. Bucket public-read olduğu için (bkz. `crate::upload::UploadResponse.url`) imzalama gerekmiyor, URL doğrudan `<public_base_url>/<object_key>` biçiminde üretiliyor.  **Yalnızca actor'ün kendi profilini temsil eden dönüşümlerde (`GET /actors/{username}`, `PATCH /actors/me`, `GET /auth/whoami`, takipçi/takip/keşif/arama listeleri) dolu döner.** Bir içeriğin (post/yorum) yazarını özetleyen `ActorSummary`'lerde (bkz. `actos-api/src/routes/posts.rs`) her zaman `None`'dur — o yol `Content.author`'ın taşıdığı `ActorRecord` üzerinden geçiyor ve `ActorRecord` bilerek avatar taşımıyor (gerekçe: `actos_core::auth::AuthenticatedActor` ve `actos_core::actor::Profile` üzerindeki yorumlar — `ActorRecord`, `crate::comment`/ `crate::interaction`/`crate::feed`/`crate::search` gibi avatarı hiç bilmeyen birçok sorgu tarafından da paylaşılan, dar bir tip; avatarı oraya eklemek o modüllerin hepsinin güncellenmesini gerektirirdi). Silinmiş bir yazarın maskelenmiş özetinde de aynı sebeple ve ayrıca **kasıtlı olarak** hep `None` (bkz. `actos-api/src/routes/posts.rs::masked_actor_summary`). */
+    /* Public URL of the avatar — `None` when no avatar has been chosen. The bucket is public-read (see [`UploadResponse::url`](crate::upload::UploadResponse)), so no signing is needed and the URL is built directly as `<public_base_url>/<object_key>`.  **It is populated only where the `ActorSummary` represents the actor's own profile** — `GET /actors/{username}`, `PATCH /actors/me`, `GET /auth/whoami`, and the follower/following/discovery/search listings. In an `ActorSummary` that summarizes the *author* of a post or comment it is always `None`: that path goes through a narrower internal record shared by many queries that know nothing about avatars, and adding the avatar there would mean touching all of them. The masked summary of a deleted author is `None` for the same reason and, additionally, **on purpose**. */
     @SerialName(value = "avatar_url")
     val avatarUrl: kotlin.String? = null,
 

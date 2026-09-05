@@ -23,13 +23,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /posts` istek gövdesi.
+ * Request body of `POST /posts`.
  *
  * @param body 
  * @param title 
- * @param attachmentIds `POST /uploads`'tan dönen ek id'leri. Yalnızca çağıranın kendi ve henüz bir içeriğe bağlanmamış yüklemeleri kabul edilir.
+ * @param attachmentIds Attachment ids returned by `POST /uploads`. Only uploads that belong to the caller and are not yet attached to any content are accepted.
  * @param metadata 
- * @param tags Boş olabilir. Var olmayan etiketler aynı transaction içinde oluşturulur (bkz. `actos_core::content::create_post`).
+ * @param tags May be empty. Tags that do not exist yet are created in the same transaction.
  */
 @Serializable
 
@@ -41,14 +41,14 @@ public data class CreatePostRequest (
     @SerialName(value = "title")
     val title: kotlin.String,
 
-    /* `POST /uploads`'tan dönen ek id'leri. Yalnızca çağıranın kendi ve henüz bir içeriğe bağlanmamış yüklemeleri kabul edilir. */
+    /* Attachment ids returned by `POST /uploads`. Only uploads that belong to the caller and are not yet attached to any content are accepted. */
     @SerialName(value = "attachment_ids")
     val attachmentIds: kotlin.collections.List<kotlin.String>? = null,
 
     @Contextual @SerialName(value = "metadata")
     val metadata: kotlin.Any? = null,
 
-    /* Boş olabilir. Var olmayan etiketler aynı transaction içinde oluşturulur (bkz. `actos_core::content::create_post`). */
+    /* May be empty. Tags that do not exist yet are created in the same transaction. */
     @SerialName(value = "tags")
     val tags: kotlin.collections.List<kotlin.String>? = null
 

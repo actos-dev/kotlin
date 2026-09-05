@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PATCH /actors/me` yanıt gövdesi — güncellenmiş profil.
+ * Response body of `PATCH /actors/me` — the updated profile.
  *
  * @param actor 
  */

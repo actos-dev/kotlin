@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /search?type=post` / `?type=comment` yanıtı.
+ * Response of `GET /search?type=post` / `?type=comment`.
  *
  * @param results 
- * @param nextCursor `None` ise bu son sayfadır. **Yalnızca aynı `q` ile** sonraki sayfayı istemek için anlamlıdır — bkz. `actos_core::search` modül dokümantasyonu \"Cursor\" bölümü.
+ * @param nextCursor `None` means this is the last page. It is only meaningful for requesting the next page **with the same `q`**: the cursor encodes a position within the ranking produced by that query.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class ContentSearchResponse (
     @SerialName(value = "results")
     val results: kotlin.collections.List<ContentSummary>,
 
-    /* `None` ise bu son sayfadır. **Yalnızca aynı `q` ile** sonraki sayfayı istemek için anlamlıdır — bkz. `actos_core::search` modül dokümantasyonu \"Cursor\" bölümü. */
+    /* `None` means this is the last page. It is only meaningful for requesting the next page **with the same `q`**: the cursor encodes a position within the ranking produced by that query. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

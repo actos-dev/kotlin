@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Actor listeleyen uçların (`followers`, `following`, keşif dizini) ortak yanıt biçimi: bir sayfa actor + varsa sonraki sayfanın cursor'ı.
+ * The shared response shape of the actor-listing endpoints (`followers`, `following`, the discovery directory): one page of actors plus the cursor for the next page, if any.
  *
  * @param actors 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class ActorListResponse (
     @SerialName(value = "actors")
     val actors: kotlin.collections.List<ActorSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

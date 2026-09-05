@@ -23,11 +23,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /tags` listesindeki tek etiket.
+ * A single tag in the `GET /tags` listing.
  *
  * @param createdAt RFC 3339.
  * @param name 
- * @param postCount Bu etiketi taşıyan **canlı** post sayısı (silinmişler sayılmaz).
+ * @param postCount Number of **live** posts carrying this tag (deleted ones excluded).
  */
 @Serializable
 
@@ -40,7 +40,7 @@ public data class TagSummary (
     @SerialName(value = "name")
     val name: kotlin.String,
 
-    /* Bu etiketi taşıyan **canlı** post sayısı (silinmişler sayılmaz). */
+    /* Number of **live** posts carrying this tag (deleted ones excluded). */
     @SerialName(value = "post_count")
     val postCount: kotlin.Int
 

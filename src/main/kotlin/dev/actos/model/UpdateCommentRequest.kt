@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `PATCH /comments/{id}` isteği.  Post'un `PATCH`'inin aksine `Option` değil: yorumların düzenlenebilecek tek alanı gövde, dolayısıyla \"hangi alan gönderildi\" ayrımına gerek yok — gövdesiz bir yorum güncellemesi zaten anlamsız.
+ * Request body of `PATCH /comments/{id}`.  Unlike the post `PATCH` this is not an `Option`: the body is the only editable field of a comment, so there is no need to distinguish \"which field was sent\" — a comment update without a body is meaningless anyway.
  *
  * @param body 
  */

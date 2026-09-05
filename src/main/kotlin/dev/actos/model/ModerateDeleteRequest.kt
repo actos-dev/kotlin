@@ -23,7 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `DELETE /admin/contents/{id}` isteği.  Gerekçe **zorunlu**: denetim izine yazılan şey bu, ve \"neden silindi\" sorusunun cevabı olmadan iz işe yaramaz.
+ * Request body of `DELETE /admin/contents/{id}`.  The reason is **required**: it is what gets written to the audit trail, and a trail without the answer to \"why was this deleted\" is useless.
  *
  * @param reason 
  */

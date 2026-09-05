@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /auth/keys` yanıt gövdesi.
+ * Response body of `GET /auth/keys`.
  *
  * @param propertyKeys 
  */

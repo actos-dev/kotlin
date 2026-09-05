@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /tags` yanıtı: popülerliğe göre sıralı, cursor'lu.
+ * Response of `GET /tags`: ordered by popularity, cursor-paginated.
  *
  * @param tags 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class TagListResponse (
     @SerialName(value = "tags")
     val tags: kotlin.collections.List<TagSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

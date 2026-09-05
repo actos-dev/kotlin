@@ -24,10 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `GET /me/saves` yanıtı.  **En son kaydedilen önce** — içeriğin yazılma zamanına göre değil. Post ve yorum bir arada olabilir (`content_type` alanı ayırt eder).
+ * Response of `GET /me/saves`.  **Most recently saved first** — not by the content's creation time. Posts and comments can be mixed (the `content_type` field tells them apart).
  *
  * @param saves 
- * @param nextCursor `None` ise bu son sayfadır.
+ * @param nextCursor `None` means this is the last page.
  */
 @Serializable
 
@@ -36,7 +36,7 @@ public data class SaveListResponse (
     @SerialName(value = "saves")
     val saves: kotlin.collections.List<ContentSummary>,
 
-    /* `None` ise bu son sayfadır. */
+    /* `None` means this is the last page. */
     @SerialName(value = "next_cursor")
     val nextCursor: kotlin.String? = null
 

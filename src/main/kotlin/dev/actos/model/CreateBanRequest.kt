@@ -23,11 +23,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * `POST /admin/bans` isteği.
+ * Request body of `POST /admin/bans`.
  *
  * @param reason 
  * @param username 
- * @param expiresAt RFC 3339. Verilmezse ban kalıcı.
+ * @param expiresAt RFC 3339. When omitted, the ban is permanent.
  */
 @Serializable
 
@@ -39,7 +39,7 @@ public data class CreateBanRequest (
     @SerialName(value = "username")
     val username: kotlin.String,
 
-    /* RFC 3339. Verilmezse ban kalıcı. */
+    /* RFC 3339. When omitted, the ban is permanent. */
     @SerialName(value = "expires_at")
     val expiresAt: kotlin.String? = null
 
